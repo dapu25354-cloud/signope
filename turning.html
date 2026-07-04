@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-TW"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<title>🚦 轉折燈</title>
+<style>
+  body{margin:0;background:#0d1117;color:#e6edf3;font-family:'Noto Sans TC',sans-serif}
+  .hd{padding:14px 16px 4px;font-size:18px;font-weight:700}
+  .upd{padding:0 16px 10px;color:#8b949e;font-size:12px}
+  .wrap{padding:0 10px 40px;overflow-x:auto}
+  pre{font-family:Consolas,'Courier New',monospace;font-size:13px;line-height:1.55;white-space:pre;margin:0;color:#dbe1e8}
+</style></head><body>
+<div id="pw-gate" style="position:fixed;inset:0;background:#0d1117;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Noto Sans TC',sans-serif;padding:20px">
+  <div style="color:#e6edf3;font-size:20px;margin-bottom:16px">&#128274; 請輸入密碼</div>
+  <div style="position:relative;width:240px">
+    <input id="pw-input" type="password" placeholder="密碼" autocomplete="off" style="padding:12px 44px 12px 16px;font-size:16px;border-radius:10px;border:1px solid #30363d;background:#161b22;color:#e6edf3;width:100%;box-sizing:border-box;text-align:center;outline:none">
+    <span id="pw-eye" title="顯示/隱藏密碼" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:19px;user-select:none">&#128065;</span>
+  </div>
+  <button id="pw-btn" style="margin-top:14px;padding:11px 28px;font-size:15px;border:0;border-radius:10px;background:#2ea043;color:#fff;font-weight:700;cursor:pointer">進入</button>
+  <div id="pw-err" style="color:#f85149;font-size:13px;margin-top:12px;height:16px"></div>
+</div>
+<script>
+(function(){
+  var HASH="1571d02308bd8adf980dc679f575a87cb0d1e2dbaab4cd32b6f6d37085db92bd";
+  var gate=document.getElementById('pw-gate');
+  function unlock(){ gate.style.display='none'; document.body.style.overflow=''; }
+  if(localStorage.getItem('radar_ok')==='1'){ unlock(); }
+  else { document.body.style.overflow='hidden'; }
+  async function check(){
+    var v=document.getElementById('pw-input').value;
+    try{
+      var buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v));
+      var hex=Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+      if(hex===HASH){ localStorage.setItem('radar_ok','1'); unlock(); }
+      else { document.getElementById('pw-err').textContent='密碼錯誤，再試一次'; }
+    }catch(e){ document.getElementById('pw-err').textContent='此瀏覽器不支援，請用 Chrome/Safari'; }
+  }
+  document.getElementById('pw-btn').onclick=check;
+  document.getElementById('pw-input').addEventListener('keydown', function(e){ if(e.key==='Enter') check(); });
+  var inp=document.getElementById('pw-input'), eye=document.getElementById('pw-eye');
+  eye.onclick=function(){
+    if(inp.type==='password'){ inp.type='text'; eye.innerHTML='&#128584;'; }
+    else { inp.type='password'; eye.innerHTML='&#128065;'; }
+    inp.focus();
+  };
+})();
+</script>
+
+  <div class="hd">🚦 轉折燈</div>
+  <div class="upd">最後更新：2026-07-05 07:45（台灣時間）</div>
+  <div class="wrap"><pre>抓取 24 檔…
+============================================================================
+  轉折燈 v3  (勢+量+均線+K棒+RSI 五過關；上車🔺/下車🔻排前)
+============================================================================
+  編號  燈  名稱           收盤    漲跌%    量比  RSI  訊號
+----------------------------------------------------------------------------
+  2   🔻  銳澤　　   199.5   -1.2  1.18   48  下車(賣)→轉折向下 [4/5:勢·均線·K棒·RSI]
+  15  🟠  鑽全　　    34.2   +2.2  2.80   66  死水盤整(振幅3.5%)→卡資金,汰弱換股
+  13  🔺  元大金　    67.2   +2.1  0.58   64  上車(買)→轉折向上 [3/5:均線·K棒·RSI]
+  22  🔺  統一實　    15.6   +2.6  0.83   54  上車(買)→轉折向上 [4/5:勢·均線·K棒·RSI]  ⚠但這是跌破年線的弱股→只能短線搶反彈,別當買進、別加碼長抱
+  1   🟡  是方　　   339.5   +0.9  0.74   47  量縮蓄勢(布林收窄+量縮0.74)→可能噴出,留意上車別急換  ⚠但這是跌破年線的弱股→只能短線搶反彈,別當買進、別加碼長抱
+  9   🟡  中信金　    70.6   +1.0  0.70   61  量縮蓄勢(布林收窄+量縮0.70)→可能噴出,留意上車別急換
+  10  🟡  國票金　    15.0   +1.4  0.79   53  量縮蓄勢(布林收窄+量縮0.79)→可能噴出,留意上車別急換  ⚠但這是跌破年線的弱股→只能短線搶反彈,別當買進、別加碼長抱
+  16  🔸  中鋼　　    19.0   +1.9  0.54   50  留意·彈上5日線但沒量沒站上10MA→別當買、別追 [3/5:勢·K棒·RSI]
+  4   🟢  均華　　  1125.0   -3.8  1.93   49  多頭續勢,沒轉折→續抱
+  7   🟢  緯穎　　  5265.0   +1.2  0.81   60  多頭續勢,沒轉折→續抱
+  8   🟢  台積電　  2445.0   -0.8  0.76   57  多頭續勢,沒轉折→續抱  〔⚡跳空-2.0%·查新聞〕
+  18  🟢  研華　　   521.0   +2.2  0.71   62  多頭續勢,沒轉折→續抱
+  19  🟢  世禾　　   206.0   +2.0  0.84   54  多頭續勢,沒轉折→續抱
+  21  🟢  台新金　    34.2   +3.5  1.16   77  多頭續勢,沒轉折→續抱
+  3   ⚪  智伸科　   265.0  +10.0  0.53   78  盤整,沒轉折→觀望  ⚡頂背離(轉弱前兆)  〔🔺漲停·查新聞〕
+  5   ⚪  緯創　　   159.0   +0.3  0.58   52  盤整,沒轉折→觀望
+  6   ⚪  世界　　   193.5   -2.3  0.51   55  盤整,沒轉折→觀望
+  11  ⚪  大立光　  4230.0   -1.5  0.47   50  空頭,沒轉折→別接
+  12  ⚪  台達電　  2075.0   +5.3  1.12   49  盤整,沒轉折→觀望
+  14  ⚪  長榮航　    43.8   -0.1  0.62   68  盤整,沒轉折→觀望
+  17  ⚪  順達　　   401.0   -1.4  0.26   50  盤整,沒轉折→觀望
+  20  ⚪  汎銓　　   455.0   +1.6  0.70   35  空頭,沒轉折→別接
+  23  ⚪  寶成　　    24.5   +1.5  0.93   48  盤整,沒轉折→觀望
+  24  ⚪  先進光　   187.0   -0.3  0.26   58  盤整,沒轉折→觀望
+============================================================================
+  🔻 下車(賣)：銳澤
+  🟠 死水換股(卡資金,汰弱)：鑽全
+  🔺 上車(買·站上年線的強勢股)：元大金
+  ⚠ 技術轉強但破年線弱股(只能短搶,別買進/加碼)：統一實
+  🟡 量縮蓄勢(準備噴,留意)：是方、中信金、國票金
+  🔸 疑似(待確認)：中鋼
+  RSI&gt;70過熱、&lt;30過冷；⚡背離=轉折前兆，要留意
+</pre></div>
+</body></html>

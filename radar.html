@@ -1,0 +1,3460 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    <title>Holdings Radar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #080c10;
+            --card-bg: #121820;
+            --border-color: #212835;
+            --text-main: #dbdee3;
+            --text-dim: #8892b0;
+            --link-color: #58a6ff;
+            --up-color: #3fb950;
+            --down-color: #f85149;
+            --warn-color: #d29922;
+            --state-color: #1f6feb;
+            --signal-bg: rgba(88, 166, 255, 0.12);
+            --signal-color: #58a6ff;
+            --extreme-bull: #bc85ff;
+        }
+        
+        * {
+            box-spacing: border-box;
+            font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        header {
+            display: flex;
+            flex-direction: column;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+        
+        @media(min-width: 768px) {
+            header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: flex-end;
+            }
+        }
+
+        .title-section h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(45deg, #58a6ff, #bc85ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .title-section p {
+            margin: 5px 0 0 0;
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+
+        .update-tag {
+            background-color: #161b22;
+            border: 1px solid var(--border-color);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text-dim);
+            font-family: monospace;
+        }
+
+        .update-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+            margin-top: 15px;
+            align-self: flex-start;
+        }
+
+        @media(min-width: 768px) {
+            .update-container {
+                margin-top: 0;
+                align-self: auto;
+            }
+        }
+
+        .force-update-btn {
+            background: linear-gradient(135deg, #1f6feb, #58a6ff);
+            border: none;
+            color: #ffffff;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(31, 111, 235, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .force-update-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(88, 166, 255, 0.3);
+            filter: brightness(1.1);
+        }
+
+        .force-update-btn:active {
+            transform: translateY(1px);
+        }
+
+        .force-update-btn:disabled {
+            background: #212835;
+            color: var(--text-dim);
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* 手機／觸控裝置隱藏「強制更新」鈕：只在電腦操作，避免在手機貼 token */
+        @media (hover: none) and (pointer: coarse), (max-width: 820px) {
+            #force-update-btn,
+            #reset-token-link {
+                display: none !important;
+            }
+        }
+
+        /* Modal 彈出視窗樣式 */
+        .token-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .token-modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .token-modal-content {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 25px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .token-modal.show .token-modal-content {
+            transform: scale(1);
+        }
+
+        .token-modal-content h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .token-modal-content p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+
+        .token-modal-content input {
+            background-color: #161b22;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .token-modal-content input:focus {
+            border-color: var(--link-color);
+        }
+
+        .token-modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .modal-btn.confirm {
+            background: linear-gradient(135deg, #1f6feb, #58a6ff);
+            color: #fff;
+        }
+
+        .modal-btn.confirm:hover {
+            filter: brightness(1.1);
+        }
+
+        .modal-btn.cancel {
+            background-color: #212835;
+            color: var(--text-main);
+        }
+
+        .modal-btn.cancel:hover {
+            background-color: #30363d;
+        }
+
+        /* 控制列 */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        @media(min-width: 768px) {
+            .controls {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            background-color: #121820;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 15px;
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--link-color);
+        }
+
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            background-color: #161b22;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .filter-btn:hover {
+            background-color: #212835;
+        }
+
+        .filter-btn.active {
+            background-color: var(--link-color);
+            color: #080c10;
+            border-color: var(--link-color);
+            font-weight: 700;
+        }
+
+        /* 卡片網格 */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media(min-width: 650px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media(min-width: 992px) {
+            .grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            border-color: #38445a;
+        }
+
+        .card-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(255,255,255,0.01);
+        }
+
+        .stock-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #f0f6fc;
+            display: block;
+        }
+
+        .stock-symbol {
+            font-size: 12px;
+            color: var(--text-dim);
+            font-family: monospace;
+        }
+
+        .trend-badge-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .stars-rating {
+            font-size: 13px;
+            color: #ffb74d;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .trend-badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .trend-bull-extreme {
+            background-color: rgba(188, 133, 255, 0.15);
+            color: var(--extreme-bull);
+            border: 1px solid rgba(188, 133, 255, 0.3);
+        }
+
+        .trend-bull {
+            background-color: rgba(63, 185, 80, 0.15);
+            color: var(--up-color);
+            border: 1px solid rgba(63, 185, 80, 0.3);
+        }
+
+        .trend-neutral {
+            background-color: rgba(136, 146, 176, 0.15);
+            color: var(--text-dim);
+            border: 1px solid rgba(136, 146, 176, 0.3);
+        }
+
+        .trend-bear {
+            background-color: rgba(248, 81, 73, 0.15);
+            color: var(--down-color);
+            border: 1px solid rgba(248, 81, 73, 0.3);
+        }
+
+        .trend-bear-extreme {
+            background-color: rgba(248, 81, 73, 0.25);
+            color: #ff6b6b;
+            border: 1px solid rgba(248, 81, 73, 0.5);
+            font-weight: 700;
+        }
+
+        .card-body {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 12px;
+        }
+
+        .price-val {
+            font-size: 26px;
+            font-weight: 700;
+            font-family: monospace;
+        }
+
+        .price-change {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .up-color { color: var(--up-color); }
+        .down-color { color: var(--down-color); }
+        .neutral-color { color: var(--text-dim); }
+
+        .badges-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 15px;
+            min-height: 22px;
+        }
+
+        .badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .badge-warn {
+            background-color: rgba(210, 153, 34, 0.15);
+            color: var(--warn-color);
+            border: 1px solid rgba(210, 153, 34, 0.3);
+        }
+
+        .badge-state {
+            background-color: rgba(31, 110, 235, 0.15);
+            color: #58a6ff;
+            border: 1px solid rgba(31, 110, 235, 0.3);
+        }
+
+        .badge-signal {
+            background-color: var(--signal-bg);
+            color: var(--signal-color);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+        }
+
+        /* 評分條 */
+        .score-section {
+            margin-bottom: 15px;
+            background-color: rgba(255,255,255,0.015);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .score-title {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .score-val {
+            color: #ffb74d;
+        }
+
+        .score-bar-container {
+            background-color: #161b22;
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .score-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        .score-bar-fill.trend-bull-extreme { background-color: var(--extreme-bull); }
+        .score-bar-fill.trend-bull { background-color: var(--up-color); }
+        .score-bar-fill.trend-neutral { background-color: var(--text-dim); }
+        .score-bar-fill.trend-bear { background-color: var(--down-color); }
+        .score-bar-fill.trend-bear-extreme { background-color: #ff6b6b; }
+
+        .score-details {
+            font-size: 10px;
+            color: var(--text-dim);
+            line-height: 1.3;
+        }
+
+        /* 指標網格 */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .metric-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .metric-label {
+            font-size: 10px;
+            color: var(--text-dim);
+            margin-bottom: 2px;
+        }
+
+        .metric-val {
+            font-size: 13px;
+            font-weight: 600;
+            color: #f0f6fc;
+            font-family: monospace;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .vp-badge {
+            font-size: 9px;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        .vp-bull { background: rgba(63, 185, 80, 0.15); color: var(--up-color); }
+        .vp-bear { background: rgba(248, 81, 73, 0.15); color: var(--down-color); }
+        .vp-neutral { background: rgba(136, 146, 176, 0.15); color: var(--text-dim); }
+
+        .rsi-low { color: var(--up-color); }
+        .rsi-high { color: var(--down-color); }
+
+        /* 籌碼與融資 */
+        .chip-section, .margin-section {
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+            margin-bottom: 8px;
+        }
+
+        .chip-summary, .margin-summary {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .chip-val, .margin-val {
+            font-weight: 700;
+        }
+
+        .chip-high { color: var(--up-color); }
+        .chip-low { color: var(--down-color); }
+
+        .chip-details {
+            font-size: 11px;
+            color: var(--text-dim);
+            line-height: 1.4;
+            font-family: monospace;
+        }
+
+        /* 戰略佈局箱 */
+        .layout-strategy-box {
+            background-color: #161c24;
+            border: 1px solid #283548;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .strat-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffb74d;
+            border-bottom: 1px dashed #283548;
+            padding-bottom: 4px;
+        }
+
+        .strat-desc {
+            font-size: 11px;
+            color: #b1bac4;
+            line-height: 1.4;
+        }
+
+        .strat-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 4px;
+        }
+
+        .strat-item {
+            font-size: 11px;
+            display: flex;
+        }
+
+        .s-label {
+            color: var(--text-dim);
+            flex-shrink: 0;
+            width: 65px;
+        }
+
+        .s-val {
+            font-weight: 600;
+        }
+
+        .text-buy { color: #a5d6ff; }
+        .text-stop { color: #ffa5a5; }
+        .text-target { color: #d8b4fe; }
+
+        footer {
+            margin-top: 50px;
+            padding: 20px 0;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-dim);
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<div id="pw-gate" style="position:fixed;inset:0;background:#0d1117;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Noto Sans TC',sans-serif;padding:20px">
+  <div style="color:#e6edf3;font-size:20px;margin-bottom:16px">&#128274; 請輸入密碼</div>
+  <div style="position:relative;width:240px">
+    <input id="pw-input" type="password" placeholder="密碼" autocomplete="off" style="padding:12px 44px 12px 16px;font-size:16px;border-radius:10px;border:1px solid #30363d;background:#161b22;color:#e6edf3;width:100%;box-sizing:border-box;text-align:center;outline:none">
+    <span id="pw-eye" title="顯示/隱藏密碼" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:19px;user-select:none">&#128065;</span>
+  </div>
+  <button id="pw-btn" style="margin-top:14px;padding:11px 28px;font-size:15px;border:0;border-radius:10px;background:#2ea043;color:#fff;font-weight:700;cursor:pointer">進入</button>
+  <div id="pw-err" style="color:#f85149;font-size:13px;margin-top:12px;height:16px"></div>
+</div>
+<script>
+(function(){
+  var HASH="1571d02308bd8adf980dc679f575a87cb0d1e2dbaab4cd32b6f6d37085db92bd";
+  var gate=document.getElementById('pw-gate');
+  function unlock(){ gate.style.display='none'; document.body.style.overflow=''; }
+  if(localStorage.getItem('radar_ok')==='1'){ unlock(); }
+  else { document.body.style.overflow='hidden'; }
+  async function check(){
+    var v=document.getElementById('pw-input').value;
+    try{
+      var buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v));
+      var hex=Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+      if(hex===HASH){ localStorage.setItem('radar_ok','1'); unlock(); }
+      else { document.getElementById('pw-err').textContent='密碼錯誤，再試一次'; }
+    }catch(e){ document.getElementById('pw-err').textContent='此瀏覽器不支援，請用 Chrome/Safari'; }
+  }
+  document.getElementById('pw-btn').onclick=check;
+  document.getElementById('pw-input').addEventListener('keydown', function(e){ if(e.key==='Enter') check(); });
+  var inp=document.getElementById('pw-input'), eye=document.getElementById('pw-eye');
+  eye.onclick=function(){
+    if(inp.type==='password'){ inp.type='text'; eye.innerHTML='&#128584;'; }
+    else { inp.type='password'; eye.innerHTML='&#128065;'; }
+    inp.focus();
+  };
+})();
+</script>
+
+    <div class="container">
+        <header>
+            <div class="title-section">
+                <h1>Holdings Radar</h1>
+            </div>
+            <div class="update-container">
+                <div class="update-tag">
+                    最後更新: 2026-07-05 07:47:47 (台灣時間)
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button id="force-update-btn" class="force-update-btn" onclick="triggerWorkflow()">⚡ 強制更新資料</button>
+                    <a href="javascript:void(0)" onclick="resetToken()" id="reset-token-link" style="color: var(--text-dim); font-size: 11px; text-decoration: none; display: none;">重設 Token</a>
+                </div>
+            </div>
+        </header>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="搜尋股票代號或名稱..." onkeyup="filterCards()">
+            </div>
+            
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="setFilter('all', this)">全部</button>
+                <button class="filter-btn" onclick="setFilter('signal', this)">⚠️ 特別訊號</button>
+                <button class="filter-btn" onclick="setFilter('bull', this)">🟢 偏多 (4星以上)</button>
+                <button class="filter-btn" onclick="setFilter('bear', this)">🔴 偏空 (2星以下)</button>
+            </div>
+        </div>
+
+        <div class="grid" id="cards-container">
+            
+        <div class="card" data-symbol="6561.TWO" data-name="是方" data-signals="" data-trend="trend-neutral">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">是方</span>
+                    <span class="stock-symbol">6561.TWO</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★★★☆☆</div>
+                    <div class="trend-badge trend-neutral">中性震盪</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">339.50</span>
+                    <span class="price-change up-color">+3.00 (+0.89%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#8b949e18;border-left:3px solid #8b949e">
+                    <span style="font-weight:700;color:#8b949e">體質｜⚫ 石頭(跌破年線)</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">雖然有賺錢，但股價還在年線之下，長多還沒站上來，先別碰、等站上年線再說。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">2.5 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-neutral" style="width: 50.0%"></div>
+                    </div>
+                    <div class="score-details">月線之下 (0), MACD紅柱 (+1), RSI強勢區 (+1), 法人微買 (+0.5), 均線偏弱 (0)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">354.45 <small class="vp-badge vp-bear">套牢壓力區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">316.00</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">50.6%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">44.3%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">21.65倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">4.21%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val ">+3.51%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 -26張 | 投信 +50張<br/>
+                        最新一日法人: 外資 +14張 | 投信 +0張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="up-color">+0 張</span> / 0.0%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🚫 不值得佈局：體質是石頭(跌破年線/衰退)，反彈是逃命波、不是機會。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">— 不佈局（體質不夠，別買）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">316.0（真要短搶才設這條，跌破就走）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="7703.TWO" data-name="銳澤" data-signals="" data-trend="trend-bear">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">銳澤</span>
+                    <span class="stock-symbol">7703.TWO</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★★☆☆☆</div>
+                    <div class="trend-badge trend-bear">中性偏空</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">199.50</span>
+                    <span class="price-change down-color">-2.50 (-1.24%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#8b949e18;border-left:3px solid #8b949e">
+                    <span style="font-weight:700;color:#8b949e">體質｜⚫ 石頭(跌破年線)</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">雖然有賺錢，但股價還在年線之下，長多還沒站上來，先別碰、等站上年線再說。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">1.5 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bear" style="width: 30.0%"></div>
+                    </div>
+                    <div class="score-details">月線之下 (0), MACD綠柱 (0), RSI強勢區 (+1), 法人微買 (+0.5), 均線偏弱 (0)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">218.39 <small class="vp-badge vp-bear">套牢壓力區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">174.29</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">52.2%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">48.5%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">22.93倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">3.51%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val ">+3.85%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 +21張 | 投信 +0張<br/>
+                        最新一日法人: 外資 +64張 | 投信 +0張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="up-color">+0 張</span> / 0.0%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🚫 不值得佈局：體質是石頭(跌破年線/衰退)，反彈是逃命波、不是機會。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">— 不佈局（體質不夠，別買）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">174.3（真要短搶才設這條，跌破就走）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="4551.TW" data-name="智伸科" data-signals="🌋 超買區" data-trend="trend-neutral">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">智伸科</span>
+                    <span class="stock-symbol">4551.TW</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★★★☆☆</div>
+                    <div class="trend-badge trend-neutral">中性震盪</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">265.00</span>
+                    <span class="price-change up-color">+24.00 (+9.96%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    <span class="badge badge-warn">⚠️ 警示股</span><span class="badge badge-signal">🌋 超買區</span>
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#d2992218;border-left:3px solid #d29922">
+                    <span style="font-weight:700;color:#d29922">體質｜🔶 估值透支(靠預期·別重壓)</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">公司有在賺錢，但股價離年線+91%、跑在過去財報前面(ROE 9%)——市場在反映未來預期(轉單/新廠/景氣復甦)。是真轉機還是純想像，要查故事；拉回分批、別追高重壓，也別當無腦長抱的真鑽石。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">3.0 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-neutral" style="width: 60.0%"></div>
+                    </div>
+                    <div class="score-details">站上月線 (+1), MACD紅柱 (+1), RSI過熱 (+1), 法人中性偏賣 (0), 均線偏弱 (0)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">157.20 <small class="vp-badge vp-bull">密集支撐區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">127.50</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val rsi-high">84.2%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">86.2%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">43.87倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">1.58%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val chip-low">-27.76%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 -740張 | 投信 -661張<br/>
+                        最新一日法人: 外資 -94張 | 投信 +0張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="down-color">+354 張</span> / 2.0%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">⏳ 目前偏高：離月線 +32%，別追高，等拉回再撿。有賺但股價跑前面，拉回分批、別重壓、盯財報兌現。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">月線 200.3（淺回撿）／季線 162.7（深回、較便宜）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">跌破 季線 162.7 站不回才走（大防線前低 127.5）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">296.8（前高／波段目標）</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="6640.TWO" data-name="均華" data-signals="" data-trend="trend-bull">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">均華</span>
+                    <span class="stock-symbol">6640.TWO</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★★★★☆</div>
+                    <div class="trend-badge trend-bull">偏多操作</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">1125.00</span>
+                    <span class="price-change down-color">-45.00 (-3.85%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#3fb95018;border-left:3px solid #3fb950">
+                    <span style="font-weight:700;color:#3fb950">體質｜💎 真鑽石</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">有賺錢(ROE 19%)、營收獲利有成長、年線一路墊高——就算沒人炒也站得住，可長抱的真貨。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">3.5 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bull" style="width: 70.0%"></div>
+                    </div>
+                    <div class="score-details">站上月線 (+1), MACD紅柱 (+1), RSI強勢區 (+1), 法人中性偏賣 (0), 均線金叉 (+0.5)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">720.18 <small class="vp-badge vp-bull">密集支撐區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">940.18</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">56.0%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">71.6%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">91.76倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">1.33%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val chip-low">-23.19%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 -501張 | 投信 -1張<br/>
+                        最新一日法人: 外資 -101張 | 投信 +0張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="up-color">+0 張</span> / 0.2%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🟢 正在佈局區：回檔到季線(1312.7)與月線(1078.8)之間。體質好、可長抱，回檔就是撿貨。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">現價分批／再拉回 月線 1078.8 加碼（深回、較便宜）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">跌破 月線 1078.8 站不回才走（前低 940.2）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">1835.0（前高／波段目標）</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="3231.TW" data-name="緯創" data-signals="🔥 主力洗盤" data-trend="trend-bear">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">緯創</span>
+                    <span class="stock-symbol">3231.TW</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★★☆☆☆</div>
+                    <div class="trend-badge trend-bear">中性偏空</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">159.00</span>
+                    <span class="price-change up-color">+0.50 (+0.32%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    <span class="badge badge-signal">🔥 主力洗盤</span>
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#3fb95018;border-left:3px solid #3fb950">
+                    <span style="font-weight:700;color:#3fb950">體質｜💎 真鑽石</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">有賺錢(ROE 27%)、營收獲利有成長、年線一路墊高——就算沒人炒也站得住，可長抱的真貨。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">2.0 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bear" style="width: 40.0%"></div>
+                    </div>
+                    <div class="score-details">月線之下 (0), MACD綠柱 (0), RSI強勢區 (+1), 法人中性偏賣 (0), 均線偏弱 (0), 主力洗盤 (+1)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">140.48 <small class="vp-badge vp-bull">密集支撐區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">131.50</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">53.9%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">46.7%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">18.93倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">3.46%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val ">-5.56%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 -35497張 | 投信 +28199張<br/>
+                        最新一日法人: 外資 -6264張 | 投信 +4536張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="up-color">-1259 張</span> / 0.0%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🟢 正在佈局區：回檔到月線(159.6)與季線(149.7)之間。體質好、可長抱，回檔就是撿貨。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">現價分批／再拉回 季線 149.7 加碼（深回、較便宜）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">跌破 季線 149.7 站不回才走（前低 131.5）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">201.0（前高／波段目標）</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="5347.TWO" data-name="世界" data-signals="" data-trend="trend-bull">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">世界</span>
+                    <span class="stock-symbol">5347.TWO</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★★★★☆</div>
+                    <div class="trend-badge trend-bull">偏多操作</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">193.50</span>
+                    <span class="price-change down-color">-4.50 (-2.27%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#d2992218;border-left:3px solid #d29922">
+                    <span style="font-weight:700;color:#d29922">體質｜🔶 估值透支(靠預期·別重壓)</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">公司有在賺錢，但股價離年線+62%、跑在過去財報前面(ROE 9%)——市場在反映未來預期(轉單/新廠/景氣復甦)。是真轉機還是純想像，要查故事；拉回分批、別追高重壓，也別當無腦長抱的真鑽石。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">4.0 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bull" style="width: 80.0%"></div>
+                    </div>
+                    <div class="score-details">站上月線 (+1), MACD紅柱 (+1), RSI強勢區 (+1), 法人中性偏賣 (0), 均線多頭 (+1)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">136.40 <small class="vp-badge vp-bull">密集支撐區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">124.00</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">59.2%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">61.9%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">45.85倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">2.31%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val chip-low">-10.86%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 -15515張 | 投信 -497張<br/>
+                        最新一日法人: 外資 -3576張 | 投信 +142張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="up-color">+0 張</span> / 0.0%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🟡 接近佈局區：離月線 +5%，等拉回或小量試。有賺但股價跑前面，拉回分批、別重壓、盯財報兌現。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">月線 183.5（淺回撿）／季線 164.1（深回、較便宜）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">跌破 季線 164.1 站不回才走（大防線前低 124.0）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">223.0（前高／波段目標）</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="6669.TW" data-name="緯穎" data-signals="🔥 主力洗盤" data-trend="trend-bull-extreme">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">緯穎</span>
+                    <span class="stock-symbol">6669.TW</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★★★★★</div>
+                    <div class="trend-badge trend-bull-extreme">極度看多</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">5265.00</span>
+                    <span class="price-change up-color">+65.00 (+1.25%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    <span class="badge badge-signal">🔥 主力洗盤</span>
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#3fb95018;border-left:3px solid #3fb950">
+                    <span style="font-weight:700;color:#3fb950">體質｜💎 真鑽石</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">有賺錢(ROE 46%)、營收獲利有成長、年線一路墊高——就算沒人炒也站得住，可長抱的真貨。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">5.0 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bull-extreme" style="width: 100.0%"></div>
+                    </div>
+                    <div class="score-details">站上月線 (+1), MACD紅柱 (+1), RSI強勢區 (+1), 法人微買 (+0.5), 均線金叉 (+0.5), 主力洗盤 (+1)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">3989.46 <small class="vp-badge vp-bull">密集支撐區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">3435.50</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">63.8%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">84.3%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">19.84倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">2.74%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val ">+3.39%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 -1638張 | 投信 +1984張<br/>
+                        最新一日法人: 外資 -89張 | 投信 +307張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="up-color">-18 張</span> / 1.5%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">⏳ 目前偏高：離月線 +8%，別追高，等拉回再撿。體質好、可長抱，回檔就是撿貨。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">月線 4863.9（淺回撿）／季線 4742.3（深回、較便宜）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">跌破 季線 4742.3 站不回才走（大防線前低 3435.5）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">6318.0（前高／波段目標）</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="2330.TW" data-name="台積電" data-signals="" data-trend="trend-bull">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">台積電</span>
+                    <span class="stock-symbol">2330.TW</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★★★★☆</div>
+                    <div class="trend-badge trend-bull">偏多操作</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">2445.00</span>
+                    <span class="price-change down-color">-20.00 (-0.81%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    <span class="badge badge-state">🏛️ 官股</span>
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#3fb95018;border-left:3px solid #3fb950">
+                    <span style="font-weight:700;color:#3fb950">體質｜💎 真鑽石</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">有賺錢(ROE 36%)、營收獲利有成長、年線一路墊高——就算沒人炒也站得住，可長抱的真貨。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">4.0 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bull" style="width: 80.0%"></div>
+                    </div>
+                    <div class="score-details">站上月線 (+1), MACD紅柱 (+1), RSI強勢區 (+1), 法人中性偏賣 (0), 均線多頭 (+1)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">1402.78 <small class="vp-badge vp-bull">密集支撐區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">2019.61</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">60.8%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">70.3%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">33.22倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">0.98%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val chip-low">-8.29%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 -20731張 | 投信 +7416張<br/>
+                        最新一日法人: 外資 -12537張 | 投信 +820張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="down-color">+3023 張</span> / 0.1%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🟡 接近佈局區：離月線 +3%，等拉回或小量試。體質好、可長抱，回檔就是撿貨。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">月線 2382.0（淺回撿）／季線 2259.9（深回、較便宜）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">跌破 季線 2259.9 站不回才走（大防線前低 2019.6）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">2811.8（前高／波段目標）</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="2891.TW" data-name="中信金" data-signals="🔥 主力洗盤" data-trend="trend-neutral">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">中信金</span>
+                    <span class="stock-symbol">2891.TW</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★★★☆☆</div>
+                    <div class="trend-badge trend-neutral">中性震盪</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">70.60</span>
+                    <span class="price-change up-color">+0.70 (+1.00%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    <span class="badge badge-signal">🔥 主力洗盤</span>
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#3fb95018;border-left:3px solid #3fb950">
+                    <span style="font-weight:700;color:#3fb950">體質｜💎 真鑽石</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">有賺錢(ROE 17%)、營收獲利有成長、年線一路墊高——就算沒人炒也站得住，可長抱的真貨。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">3.0 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-neutral" style="width: 60.0%"></div>
+                    </div>
+                    <div class="score-details">站上月線 (+1), MACD綠柱 (0), RSI強勢區 (+1), 法人中性偏賣 (0), 均線偏弱 (0), 主力洗盤 (+1)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">42.19 <small class="vp-badge vp-bull">密集支撐區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">52.30</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">61.0%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">62.3%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">17.39倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">3.54%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val ">-5.85%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 -32761張 | 投信 +19913張<br/>
+                        最新一日法人: 外資 -4144張 | 投信 +3145張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="up-color">-443 張</span> / 1.6%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🟢 現在就在佈局區：貼近月線(69.7)。體質好、可長抱，回檔就是撿貨。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">月線 69.7（淺回撿）／季線 60.6（深回、較便宜）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">跌破 季線 60.6 站不回才走（大防線前低 52.3）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">76.2（前高／波段目標）</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="2889.TW" data-name="國票金" data-signals="" data-trend="trend-bear-extreme">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">國票金</span>
+                    <span class="stock-symbol">2889.TW</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★☆☆☆☆</div>
+                    <div class="trend-badge trend-bear-extreme">空頭保守</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">15.00</span>
+                    <span class="price-change up-color">+0.20 (+1.35%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#8b949e18;border-left:3px solid #8b949e">
+                    <span style="font-weight:700;color:#8b949e">體質｜⚫ 石頭(跌破年線)</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">雖然有賺錢，但股價還在年線之下，長多還沒站上來，先別碰、等站上年線再說。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">1.0 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bear-extreme" style="width: 20.0%"></div>
+                    </div>
+                    <div class="score-details">站上月線 (+1), MACD綠柱 (0), RSI整理 (0), 法人中性偏賣 (0), 均線偏弱 (0)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">15.03 <small class="vp-badge vp-neutral">籌碼整理區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">14.35</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">50.0%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">54.9%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">23.81倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">2.00%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val chip-low">-13.45%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 -2773張 | 投信 +5張<br/>
+                        最新一日法人: 外資 +2681張 | 投信 +0張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="down-color">+326 張</span> / 0.1%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🚫 不值得佈局：體質是石頭(跌破年線/衰退)，反彈是逃命波、不是機會。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">— 不佈局（體質不夠，別買）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">14.3（真要短搶才設這條，跌破就走）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="3008.TW" data-name="大立光" data-signals="" data-trend="trend-bear-extreme">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">大立光</span>
+                    <span class="stock-symbol">3008.TW</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★☆☆☆☆</div>
+                    <div class="trend-badge trend-bear-extreme">空頭保守</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">4230.00</span>
+                    <span class="price-change down-color">-65.00 (-1.51%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#3fb95018;border-left:3px solid #3fb950">
+                    <span style="font-weight:700;color:#3fb950">體質｜💎 真鑽石</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">有賺錢(ROE 11%)、營收獲利有成長、年線一路墊高——就算沒人炒也站得住，可長抱的真貨。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">1.0 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bear-extreme" style="width: 20.0%"></div>
+                    </div>
+                    <div class="score-details">月線之下 (0), MACD綠柱 (0), RSI強勢區 (+1), 法人中性偏賣 (0), 均線偏弱 (0)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">2303.16 <small class="vp-badge vp-bull">密集支撐區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">2440.00</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">53.8%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">38.1%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">26.88倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">1.89%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val chip-low">-19.38%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 -1745張 | 投信 -728張<br/>
+                        最新一日法人: 外資 -302張 | 投信 -130張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="down-color">+190 張</span> / 0.6%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🟢 正在佈局區：回檔到月線(4476.5)與季線(3476.2)之間。體質好、可長抱，回檔就是撿貨。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">現價分批／再拉回 季線 3476.2 加碼（深回、較便宜）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">跌破 季線 3476.2 站不回才走（前低 2440.0）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">5360.0（前高／波段目標）</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="2308.TW" data-name="台達電" data-signals="" data-trend="trend-bear-extreme">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">台達電</span>
+                    <span class="stock-symbol">2308.TW</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★☆☆☆☆</div>
+                    <div class="trend-badge trend-bear-extreme">空頭保守</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">2075.00</span>
+                    <span class="price-change up-color">+105.00 (+5.33%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#3fb95018;border-left:3px solid #3fb950">
+                    <span style="font-weight:700;color:#3fb950">體質｜💎 真鑽石</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">有賺錢(ROE 24%)、營收獲利有成長、年線一路墊高——就算沒人炒也站得住，可長抱的真貨。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">0.0 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bear-extreme" style="width: 0.0%"></div>
+                    </div>
+                    <div class="score-details">月線之下 (0), MACD綠柱 (0), RSI整理 (0), 法人中性偏賣 (0), 均線偏弱 (0)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">928.15 <small class="vp-badge vp-bull">密集支撐區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">1790.00</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">41.3%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">44.8%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">90.10倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">0.56%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val ">-3.86%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 -1871張 | 投信 -340張<br/>
+                        最新一日法人: 外資 +437張 | 投信 -455張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="down-color">+481 張</span> / 0.4%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🟢 已跌破月線季線、更便宜：好股深蹲，分批接、要站回 季線 2100.1 才算止穩。體質好、可長抱，回檔就是撿貨。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">現價分批（已在 季線 2100.1 之下、較便宜）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">前低 1790.0 跌破站不回才走</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">2571.6（前高／波段目標）</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="2885.TW" data-name="元大金" data-signals="" data-trend="trend-bear">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">元大金</span>
+                    <span class="stock-symbol">2885.TW</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★★☆☆☆</div>
+                    <div class="trend-badge trend-bear">中性偏空</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">67.20</span>
+                    <span class="price-change up-color">+1.40 (+2.13%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#3fb95018;border-left:3px solid #3fb950">
+                    <span style="font-weight:700;color:#3fb950">體質｜💎 真鑽石</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">有賺錢(ROE 13%)、營收獲利有成長、年線一路墊高——就算沒人炒也站得住，可長抱的真貨。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">2.0 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bear" style="width: 40.0%"></div>
+                    </div>
+                    <div class="score-details">站上月線 (+1), MACD綠柱 (0), RSI強勢區 (+1), 法人中性偏賣 (0), 均線偏弱 (0)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">34.14 <small class="vp-badge vp-bull">密集支撐區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">49.80</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">64.9%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">70.6%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">24.53倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">2.29%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val ">-6.72%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 -1370張 | 投信 -6655張<br/>
+                        最新一日法人: 外資 +6786張 | 投信 +2333張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="down-color">+725 張</span> / 1.2%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🟡 接近佈局區：離月線 +2%，等拉回或小量試。體質好、可長抱，回檔就是撿貨。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">月線 65.6（淺回撿）／季線 58.0（深回、較便宜）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">跌破 季線 58.0 站不回才走（大防線前低 49.8）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">72.6（前高／波段目標）</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="2618.TW" data-name="長榮航" data-signals="🌋 超買區" data-trend="trend-bull-extreme">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">長榮航</span>
+                    <span class="stock-symbol">2618.TW</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★★★★★</div>
+                    <div class="trend-badge trend-bull-extreme">極度看多</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">43.85</span>
+                    <span class="price-change down-color">-0.05 (-0.11%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    <span class="badge badge-signal">🌋 超買區</span>
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#2f81f718;border-left:3px solid #2f81f7">
+                    <span style="font-weight:700;color:#2f81f7">體質｜🔄 復甦股(景氣循環·等年線翻正)</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">有賺錢、也站上年線了，但年線還在下彎(前一波跌勢剛翻上來)——屬谷底復甦股，適合『拉回』撿波段/賺殖利率，還不是能無腦長抱的真鑽石，追高別追。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">4.5 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bull-extreme" style="width: 90.0%"></div>
+                    </div>
+                    <div class="score-details">站上月線 (+1), MACD紅柱 (+1), RSI過熱 (+1), 法人微買 (+0.5), 均線多頭 (+1)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">37.87 <small class="vp-badge vp-bull">密集支撐區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">33.20</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val rsi-high">73.7%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">71.2%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">9.14倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">4.56%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val ">+1.17%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 -52109張 | 投信 +54850張<br/>
+                        最新一日法人: 外資 -4906張 | 投信 +4735張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="up-color">-2806 張</span> / 0.0%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🟡 接近佈局區：離月線 +6%，等拉回或小量試。景氣循環轉機，只在拉回撿、賺波段別追高。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">月線 41.3（淺回撿）／季線 37.1（深回、較便宜）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">跌破 季線 37.1 站不回才走（大防線前低 33.2）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">48.2（前高／波段目標）</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="1527.TW" data-name="鑽全" data-signals="" data-trend="trend-bull">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">鑽全</span>
+                    <span class="stock-symbol">1527.TW</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★★★★☆</div>
+                    <div class="trend-badge trend-bull">偏多操作</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">34.20</span>
+                    <span class="price-change up-color">+0.75 (+2.24%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#2f81f718;border-left:3px solid #2f81f7">
+                    <span style="font-weight:700;color:#2f81f7">體質｜🔄 復甦股(景氣循環·等年線翻正)</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">有賺錢、也站上年線了，但年線還在下彎(前一波跌勢剛翻上來)——屬谷底復甦股，適合『拉回』撿波段/賺殖利率，還不是能無腦長抱的真鑽石，追高別追。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">4.0 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bull" style="width: 80.0%"></div>
+                    </div>
+                    <div class="score-details">站上月線 (+1), MACD紅柱 (+1), RSI強勢區 (+1), 法人中性偏賣 (0), 均線多頭 (+1)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">32.93 <small class="vp-badge vp-bull">密集支撐區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">31.80</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">65.1%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">135.4%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">22.50倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">4.39%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val ">-4.01%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 -52張 | 投信 +0張<br/>
+                        最新一日法人: 外資 -145張 | 投信 +0張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="down-color">+27 張</span> / 0.0%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🟡 接近佈局區：離月線 +3%，等拉回或小量試。景氣循環轉機，只在拉回撿、賺波段別追高。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">月線 33.3（淺回撿）／季線 32.9（深回、較便宜）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">跌破 季線 32.9 站不回才走（大防線前低 31.8）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">37.6（前高／波段目標）</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="2002.TW" data-name="中鋼" data-signals="" data-trend="trend-bear">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">中鋼</span>
+                    <span class="stock-symbol">2002.TW</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★★☆☆☆</div>
+                    <div class="trend-badge trend-bear">中性偏空</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">18.95</span>
+                    <span class="price-change up-color">+0.35 (+1.88%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#8b949e18;border-left:3px solid #8b949e">
+                    <span style="font-weight:700;color:#8b949e">體質｜⚫ 石頭(避開)</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">又賠錢、長多結構也沒有，沒有值得碰的理由，避開。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">2.0 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bear" style="width: 40.0%"></div>
+                    </div>
+                    <div class="score-details">站上月線 (+1), MACD綠柱 (0), RSI強勢區 (+1), 法人中性偏賣 (0), 均線偏弱 (0)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">19.21 <small class="vp-badge vp-bear">套牢壓力區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">18.05</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">50.8%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">52.3%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">N/A</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">0.79%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val chip-low">-29.38%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 -63766張 | 投信 -107張<br/>
+                        最新一日法人: 外資 +13479張 | 投信 +21張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="down-color">+1894 張</span> / 1.4%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🚫 不值得佈局：體質是石頭(跌破年線/衰退)，反彈是逃命波、不是機會。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">— 不佈局（體質不夠，別買）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">18.1（真要短搶才設這條，跌破就走）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="3211.TWO" data-name="順達" data-signals="" data-trend="trend-bear-extreme">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">順達</span>
+                    <span class="stock-symbol">3211.TWO</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★☆☆☆☆</div>
+                    <div class="trend-badge trend-bear-extreme">空頭保守</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">401.00</span>
+                    <span class="price-change down-color">-5.50 (-1.35%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#3fb95018;border-left:3px solid #3fb950">
+                    <span style="font-weight:700;color:#3fb950">體質｜💎 真鑽石</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">有賺錢(ROE 17%)、營收獲利有成長、年線一路墊高——就算沒人炒也站得住，可長抱的真貨。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">0.5 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bear-extreme" style="width: 10.0%"></div>
+                    </div>
+                    <div class="score-details">月線之下 (0), MACD綠柱 (0), RSI整理 (0), 法人微買 (+0.5), 均線偏弱 (0)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">349.48 <small class="vp-badge vp-bull">密集支撐區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">332.88</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">48.3%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">44.0%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">44.65倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">2.86%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val ">+3.25%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 -809張 | 投信 +1339張<br/>
+                        最新一日法人: 外資 -10張 | 投信 +1張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="up-color">+0 張</span> / 0.1%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🟢 正在佈局區：回檔到月線(404.8)與季線(386.8)之間。體質好、可長抱，回檔就是撿貨。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">現價分批／再拉回 季線 386.8 加碼（深回、較便宜）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">跌破 季線 386.8 站不回才走（前低 332.9）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">481.2（前高／波段目標）</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="2395.TW" data-name="研華" data-signals="" data-trend="trend-bull-extreme">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">研華</span>
+                    <span class="stock-symbol">2395.TW</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★★★★★</div>
+                    <div class="trend-badge trend-bull-extreme">極度看多</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">521.00</span>
+                    <span class="price-change up-color">+11.00 (+2.16%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#3fb95018;border-left:3px solid #3fb950">
+                    <span style="font-weight:700;color:#3fb950">體質｜💎 真鑽石</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">有賺錢(ROE 23%)、營收獲利有成長、年線一路墊高——就算沒人炒也站得住，可長抱的真貨。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">5.0 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bull-extreme" style="width: 100.0%"></div>
+                    </div>
+                    <div class="score-details">站上月線 (+1), MACD紅柱 (+1), RSI強勢區 (+1), 法人鎖碼 (+1), 均線多頭 (+1)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">348.05 <small class="vp-badge vp-bull">密集支撐區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">339.50</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">65.1%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">104.8%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">40.64倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">2.15%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val chip-high">+27.16%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 +3360張 | 投信 +127張<br/>
+                        最新一日法人: 外資 +463張 | 投信 +34張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="down-color">+60 張</span> / 0.7%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🟡 接近佈局區：離月線 +7%，等拉回或小量試。體質好、可長抱，回檔就是撿貨。 ＋法人正在鎖碼(加分)</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">月線 485.1（淺回撿）／季線 446.3（深回、較便宜）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">跌破 季線 446.3 站不回才走（大防線前低 339.5）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">583.5（前高／波段目標）</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="3551.TWO" data-name="世禾" data-signals="" data-trend="trend-bull-extreme">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">世禾</span>
+                    <span class="stock-symbol">3551.TWO</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★★★★★</div>
+                    <div class="trend-badge trend-bull-extreme">極度看多</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">206.00</span>
+                    <span class="price-change up-color">+4.00 (+1.98%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#3fb95018;border-left:3px solid #3fb950">
+                    <span style="font-weight:700;color:#3fb950">體質｜💎 真鑽石</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">有賺錢(ROE 11%)、營收獲利有成長、年線一路墊高——就算沒人炒也站得住，可長抱的真貨。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">5.0 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bull-extreme" style="width: 100.0%"></div>
+                    </div>
+                    <div class="score-details">站上月線 (+1), MACD紅柱 (+1), RSI強勢區 (+1), 法人鎖碼 (+1), 均線多頭 (+1)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">171.80 <small class="vp-badge vp-bull">密集支撐區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">172.00</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">60.0%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">75.2%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">24.88倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">2.33%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val chip-high">+20.56%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 +450張 | 投信 +0張<br/>
+                        最新一日法人: 外資 +119張 | 投信 +0張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="up-color">+0 張</span> / 0.2%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🟢 現在就在佈局區：貼近季線(202.0)。體質好、可長抱，回檔就是撿貨。 ＋法人正在鎖碼(加分)</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">季線 202.0（淺回撿）／月線 198.1（深回、較便宜）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">跌破 月線 198.1 站不回才走（大防線前低 172.0）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">236.9（前高／波段目標）</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="6830.TW" data-name="汎銓" data-signals="" data-trend="trend-bear-extreme">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">汎銓</span>
+                    <span class="stock-symbol">6830.TW</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★☆☆☆☆</div>
+                    <div class="trend-badge trend-bear-extreme">空頭保守</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">455.00</span>
+                    <span class="price-change up-color">+7.00 (+1.56%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#f8514918;border-left:3px solid #f85149">
+                    <span style="font-weight:700;color:#f85149">體質｜🔴 鍍金石頭(賠錢被炒)</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">公司根本在賠錢，股價全靠題材炒上來——量退就打回原形，最多短線快進快出，絕不長抱。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">0.5 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bear-extreme" style="width: 10.0%"></div>
+                    </div>
+                    <div class="score-details">月線之下 (0), MACD綠柱 (0), RSI整理 (0), 法人微買 (+0.5), 均線偏弱 (0)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">201.74 <small class="vp-badge vp-bull">密集支撐區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">456.00</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">43.4%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">14.4%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">N/A</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">22.00%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val ">+3.08%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 +186張 | 投信 +0張<br/>
+                        最新一日法人: 外資 -94張 | 投信 +0張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="up-color">-79 張</span> / 4.0%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🚫 不值得佈局：公司在賠錢、純題材炒。要碰只能極短線搶反彈(非佈局)，套住沒人救。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">— 不佈局（體質不夠，別買）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">456.0（真要短搶才設這條，跌破就走）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="2887.TW" data-name="台新金" data-signals="🔥 主力洗盤,🌋 超買區" data-trend="trend-bull-extreme">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">台新金</span>
+                    <span class="stock-symbol">2887.TW</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★★★★★</div>
+                    <div class="trend-badge trend-bull-extreme">極度看多</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">34.15</span>
+                    <span class="price-change up-color">+1.15 (+3.48%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    <span class="badge badge-signal">🔥 主力洗盤</span><span class="badge badge-signal">🌋 超買區</span>
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#3fb95018;border-left:3px solid #3fb950">
+                    <span style="font-weight:700;color:#3fb950">體質｜💎 真鑽石</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">有賺錢(ROE 14%)、營收獲利有成長、年線一路墊高——就算沒人炒也站得住，可長抱的真貨。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">6.0 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bull-extreme" style="width: 120.0%"></div>
+                    </div>
+                    <div class="score-details">站上月線 (+1), MACD紅柱 (+1), RSI過熱 (+1), 法人鎖碼 (+1), 均線多頭 (+1), 主力洗盤 (+1)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">23.35 <small class="vp-badge vp-bull">密集支撐區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">22.85</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val rsi-high">78.8%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">86.8%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">17.88倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">2.64%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val chip-high">+20.17%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 +35096張 | 投信 +47031張<br/>
+                        最新一日法人: 外資 +47477張 | 投信 -3893張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="up-color">-175 張</span> / 2.5%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">⏳ 目前偏高：離月線 +9%，別追高，等拉回再撿。體質好、可長抱，回檔就是撿貨。 ＋法人正在鎖碼(加分)</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">月線 31.4（淺回撿）／季線 26.6（深回、較便宜）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">跌破 季線 26.6 站不回才走（大防線前低 22.9）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">36.9（前高／波段目標）</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="9907.TW" data-name="統一實" data-signals="🔥 主力洗盤" data-trend="trend-bull-extreme">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">統一實</span>
+                    <span class="stock-symbol">9907.TW</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★★★★★</div>
+                    <div class="trend-badge trend-bull-extreme">極度看多</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">15.55</span>
+                    <span class="price-change up-color">+0.40 (+2.64%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    <span class="badge badge-signal">🔥 主力洗盤</span>
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#8b949e18;border-left:3px solid #8b949e">
+                    <span style="font-weight:700;color:#8b949e">體質｜⚫ 石頭(跌破年線)</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">雖然有賺錢，但股價還在年線之下，長多還沒站上來，先別碰、等站上年線再說。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">5.5 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bull-extreme" style="width: 110.00000000000001%"></div>
+                    </div>
+                    <div class="score-details">站上月線 (+1), MACD紅柱 (+1), RSI強勢區 (+1), 法人鎖碼 (+1), 均線金叉 (+0.5), 主力洗盤 (+1)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">16.97 <small class="vp-badge vp-bear">套牢壓力區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">14.68</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">50.5%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">74.0%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">11.43倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">7.59%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val chip-high">+12.28%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 +5975張 | 投信 -2517張<br/>
+                        最新一日法人: 外資 +3041張 | 投信 -507張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="up-color">-52 張</span> / 0.2%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🚫 不值得佈局：體質是石頭(跌破年線/衰退)，反彈是逃命波、不是機會。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">— 不佈局（體質不夠，別買）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">14.7（真要短搶才設這條，跌破就走）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="9904.TW" data-name="寶成" data-signals="" data-trend="trend-bear-extreme">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">寶成</span>
+                    <span class="stock-symbol">9904.TW</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★☆☆☆☆</div>
+                    <div class="trend-badge trend-bear-extreme">空頭保守</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">24.45</span>
+                    <span class="price-change up-color">+0.35 (+1.45%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#8b949e18;border-left:3px solid #8b949e">
+                    <span style="font-weight:700;color:#8b949e">體質｜⚫ 石頭(跌破年線)</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">雖然有賺錢，但股價還在年線之下，長多還沒站上來，先別碰、等站上年線再說。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">0.0 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bear-extreme" style="width: 0.0%"></div>
+                    </div>
+                    <div class="score-details">月線之下 (0), MACD綠柱 (0), RSI整理 (0), 法人中性偏賣 (0), 均線偏弱 (0)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">27.11 <small class="vp-badge vp-bear">套牢壓力區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">23.70</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">36.3%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">39.3%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">5.99倍</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">5.32%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val chip-low">-25.72%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 -1829張 | 投信 -45857張<br/>
+                        最新一日法人: 外資 +8216張 | 投信 +25張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="down-color">+1571 張</span> / 0.0%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🚫 不值得佈局：體質是石頭(跌破年線/衰退)，反彈是逃命波、不是機會。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">— 不佈局（體質不夠，別買）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">23.7（真要短搶才設這條，跌破就走）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" data-symbol="3362.TWO" data-name="先進光" data-signals="" data-trend="trend-bear">
+            <div class="card-header">
+                <div>
+                    <span class="stock-name">先進光</span>
+                    <span class="stock-symbol">3362.TWO</span>
+                </div>
+                <div class="trend-badge-group">
+                    <div class="stars-rating">★★☆☆☆</div>
+                    <div class="trend-badge trend-bear">中性偏空</div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="price-row">
+                    <span class="price-val">187.00</span>
+                    <span class="price-change down-color">-0.50 (-0.27%)</span>
+                </div>
+                
+                <div class="badges-row">
+                    
+                </div>
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:#f8514918;border-left:3px solid #f85149">
+                    <span style="font-weight:700;color:#f85149">體質｜🔴 鍍金石頭(賠錢被炒)</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">公司根本在賠錢，股價全靠題材炒上來——量退就打回原形，最多短線快進快出，絕不長抱。</div>
+                </div>
+
+                <!-- 綜合戰略分析得分 -->
+                <div class="score-section">
+                    <div class="score-title">
+                        <span>綜合多空評分</span>
+                        <span class="score-val">2.0 / 5.0 分</span>
+                    </div>
+                    <div class="score-bar-container">
+                        <div class="score-bar-fill trend-bear" style="width: 40.0%"></div>
+                    </div>
+                    <div class="score-details">站上月線 (+1), MACD綠柱 (0), RSI強勢區 (+1), 法人中性偏賣 (0), 均線偏弱 (0)</div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">成交密集區 (POC)</span>
+                        <span class="metric-val">116.32 <small class="vp-badge vp-bull">密集支撐區</small></span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">底部防守點</span>
+                        <span class="metric-val">100.00</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">RSI(14)</span>
+                        <span class="metric-val ">59.6%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">布林位置</span>
+                        <span class="metric-val">55.7%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">本益比</span>
+                        <span class="metric-val">N/A</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">殖利率</span>
+                        <span class="metric-val value-dy">0.53%</span>
+                    </div>
+                </div>
+                
+                <div class="chip-section">
+                    <div class="chip-summary">
+                        <span>5日籌碼集中度</span>
+                        <span class="chip-val ">-4.22%</span>
+                    </div>
+                    <div class="chip-details">
+                        5日法人買賣超: 外資 -784張 | 投信 +0張<br/>
+                        最新一日法人: 外資 -120張 | 投信 +0張
+                    </div>
+                </div>
+
+                <div class="margin-section">
+                    <div class="margin-summary">
+                        <span>5日融資變動 / 券資比</span>
+                        <span class="margin-val"><span class="up-color">+0 張</span> / 4.2%</span>
+                    </div>
+                </div>
+                
+                <div class="layout-strategy-box">
+                    <div class="strat-title">🎯 值得佈局點（依體質判斷）</div>
+                    <div class="strat-desc">🚫 不值得佈局：公司在賠錢、純題材炒。要碰只能極短線搶反彈(非佈局)，套住沒人救。</div>
+                    <div class="strat-grid">
+                        <div class="strat-item">
+                            <span class="s-label">佈局點價：</span>
+                            <span class="s-val text-buy">— 不佈局（體質不夠，別買）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">防守停損：</span>
+                            <span class="s-val text-stop">100.0（真要短搶才設這條，跌破就走）</span>
+                        </div>
+                        <div class="strat-item">
+                            <span class="s-label">目標價位：</span>
+                            <span class="s-val text-target">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        </div>
+
+        <footer>
+            <p>© 2026 Holdings Radar. 由 GitHub Actions 雲端自動執行更新。</p>
+        </footer>
+    </div>
+
+    <!-- Token Modal -->
+    <div id="token-modal" class="token-modal">
+        <div class="token-modal-content">
+            <h3>🔑 輸入 GitHub Token</h3>
+            <p>請輸入您的 Personal Access Token (PAT) 以便啟動雲端更新。此 Token 僅儲存於您手機的瀏覽器中，安全無虞。</p>
+            <input type="password" id="modal-token-input" placeholder="請在此貼上 github_pat_...">
+            <div class="token-modal-buttons">
+                <button id="modal-confirm-btn" class="modal-btn confirm">確認</button>
+                <button id="modal-cancel-btn" class="modal-btn cancel">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentFilter = 'all';
+
+        function setFilter(filter, btnElement) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+            
+            currentFilter = filter;
+            filterCards();
+        }
+
+        function filterCards() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const cards = document.querySelectorAll('.card');
+            
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name').toLowerCase();
+                const symbol = card.getAttribute('data-symbol').toLowerCase();
+                const signals = card.getAttribute('data-signals');
+                const trendClass = card.getAttribute('data-trend');
+                
+                const matchesSearch = name.includes(query) || symbol.includes(query);
+                
+                let matchesFilter = false;
+                if (currentFilter === 'all') {
+                    matchesFilter = true;
+                } else if (currentFilter === 'signal') {
+                    matchesFilter = signals && signals.length > 0;
+                } else if (currentFilter === 'bull') {
+                    matchesFilter = trendClass === 'trend-bull' || trendClass === 'trend-bull-extreme';
+                } else if (currentFilter === 'bear') {
+                    matchesFilter = trendClass === 'trend-bear' || trendClass === 'trend-bear-extreme';
+                }
+                
+                if (matchesSearch && matchesFilter) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        async function triggerWorkflow() {
+            const btn = document.getElementById('force-update-btn');
+            
+            let token = localStorage.getItem('github_token');
+            if (!token) {
+                showTokenModal(async function(inputToken) {
+                    if (!inputToken) return;
+                    localStorage.setItem('github_token', inputToken);
+                    await sendUpdateRequest(inputToken, btn);
+                });
+            } else {
+                await sendUpdateRequest(token, btn);
+            }
+        }
+
+        function showTokenModal(callback) {
+            const modal = document.getElementById('token-modal');
+            const input = document.getElementById('modal-token-input');
+            input.value = '';
+            modal.classList.add('show');
+            input.focus();
+
+            document.getElementById('modal-confirm-btn').onclick = function() {
+                const val = input.value.trim();
+                modal.classList.remove('show');
+                callback(val);
+            };
+
+            document.getElementById('modal-cancel-btn').onclick = function() {
+                modal.classList.remove('show');
+                callback(null);
+            };
+
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    modal.classList.remove('show');
+                    callback(null);
+                }
+            };
+        }
+
+        async function sendUpdateRequest(token, btn) {
+            btn.disabled = true;
+            btn.innerHTML = '⏳ 正在發送更新請求...';
+
+            try {
+                const owner = 'dapu25354-cloud';
+                const repo = 'holdings-radar';
+                const workflowId = 'stock_monitor.yml';
+                
+                const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/${workflowId}/dispatches`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ref: 'main',
+                        inputs: {
+                            mode: 'intraday'
+                        }
+                    })
+                });
+
+                if (response.status === 204) {
+                    alert('🎉 已成功觸發 GitHub Actions 雲端更新！\n更新過程約需要 1~2 分鐘，請於 1-2 分鐘後重新整理網頁查看最新數據。');
+                    btn.innerHTML = '✅ 已觸發更新 (請稍後重整理)';
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = '⚡ 強制更新資料';
+                    }, 60000);
+                } else {
+                    const errData = await response.json().catch(() => ({}));
+                    const errMsg = errData.message || `HTTP ${response.status}`;
+                    alert(`❌ 觸發失敗：${errMsg}\n可能原因：Token 無效或沒有 Actions 權限。`);
+                    
+                    if (response.status === 401 || response.status === 403 || response.status === 404) {
+                        localStorage.removeItem('github_token');
+                    }
+                    
+                    btn.disabled = false;
+                    btn.innerHTML = '⚡ 強制更新資料';
+                }
+            } catch (error) {
+                alert(`❌ 連線錯誤：${error.message}`);
+                btn.disabled = false;
+                btn.innerHTML = '⚡ 強制更新資料';
+            }
+            checkTokenDisplay();
+        }
+
+        function checkTokenDisplay() {
+            const token = localStorage.getItem('github_token');
+            const link = document.getElementById('reset-token-link');
+            if (token) {
+                link.style.display = 'inline';
+            } else {
+                link.style.display = 'none';
+            }
+        }
+
+        function resetToken() {
+            localStorage.removeItem('github_token');
+            alert('GitHub Token 已清除，下次點擊更新時將會重新提示輸入。');
+            checkTokenDisplay();
+        }
+
+        window.addEventListener('DOMContentLoaded', checkTokenDisplay);
+        
+        if (document.readyState === 'interactive' || document.readyState === 'complete') {
+            checkTokenDisplay();
+        }
+    </script>
+</body>
+</html>

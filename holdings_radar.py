@@ -1541,7 +1541,6 @@ def build_dashboard():
         <header>
             <div class="title-section">
                 <h1>Holdings Radar</h1>
-                <a href="add_zone.html" style="display:inline-block;margin-top:8px;padding:9px 18px;border-radius:10px;background:#2ea043;color:#fff;text-decoration:none;font-size:14px;font-weight:700;box-shadow:0 2px 8px rgba(46,160,67,.35)">📈 加碼區（該不該加碼）→</a>
             </div>
             <div class="update-container">
                 <div class="update-tag">
@@ -1753,7 +1752,8 @@ def build_dashboard():
         html_template = _lock(html_template)  # 加密碼鎖(共用 page_lock.py)
     except Exception as _e:
         print(f"密碼鎖套用失敗(略過): {_e}")
-    output_path = os.path.join(os.path.dirname(__file__), "index.html")
+    # 改輸出 radar.html：index.html 改當「頁籤外框」(見 web_scans.py)，雷達是其中一個頁籤
+    output_path = os.path.join(os.path.dirname(__file__), "radar.html")
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(html_template)
     print(f"成功產生靜態網頁: {output_path}")
