@@ -1717,6 +1717,11 @@ def build_dashboard():
 </body>
 </html>
 """
+    try:
+        from page_lock import inject as _lock
+        html_template = _lock(html_template)  # 加密碼鎖(共用 page_lock.py)
+    except Exception as _e:
+        print(f"密碼鎖套用失敗(略過): {_e}")
     output_path = os.path.join(os.path.dirname(__file__), "index.html")
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(html_template)
