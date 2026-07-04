@@ -1509,6 +1509,7 @@ def build_dashboard():
         <header>
             <div class="title-section">
                 <h1>Holdings Radar</h1>
+                <a href="add_zone.html" style="display:inline-block;margin-top:8px;padding:9px 18px;border-radius:10px;background:#2ea043;color:#fff;text-decoration:none;font-size:14px;font-weight:700;box-shadow:0 2px 8px rgba(46,160,67,.35)">📈 加碼區（該不該加碼）→</a>
             </div>
             <div class="update-container">
                 <div class="update-tag">
