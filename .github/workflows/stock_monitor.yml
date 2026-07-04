@@ -6,6 +6,10 @@ on:
       mode:
         description: '執行模式：evening（收盤重點）或 intraday（獵殺與籌碼掃描）'
         default: 'intraday'
+  schedule:
+    # 每個交易日(週一~週五)自動重生網頁。cron 是 UTC，台灣時間 = UTC+8。
+    - cron: '0 4 * * 1-5'   # UTC 04:00 = 台灣 12:00 盤中快照
+    - cron: '0 8 * * 1-5'   # UTC 08:00 = 台灣 16:00 收盤後(法人籌碼已出)完整版
   push:
     branches: [main]
     paths: ['.github/workflows/stock_monitor.yml']
@@ -29,6 +33,9 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run Stock Monitor
+        # 排程(schedule)只更新網頁、不跑獵殺/通知，避免每天發 Telegram 轟炸。
+        # 手動觸發(workflow_dispatch)或改 workflow 檔時才跑完整掃描與通知。
+        if: github.event_name != 'schedule'
         run: |
           # 判斷目前時間決定模式 (如果不是手動觸發)
           HOUR=$(date +%H)
