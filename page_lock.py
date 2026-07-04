@@ -12,7 +12,10 @@ PASSWORD_SHA256 = "1571d02308bd8adf980dc679f575a87cb0d1e2dbaab4cd32b6f6d37085db9
 _GATE = """
 <div id="pw-gate" style="position:fixed;inset:0;background:#0d1117;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Noto Sans TC',sans-serif;padding:20px">
   <div style="color:#e6edf3;font-size:20px;margin-bottom:16px">&#128274; 請輸入密碼</div>
-  <input id="pw-input" type="password" placeholder="密碼" autocomplete="off" style="padding:12px 16px;font-size:16px;border-radius:10px;border:1px solid #30363d;background:#161b22;color:#e6edf3;width:240px;text-align:center;outline:none">
+  <div style="position:relative;width:240px">
+    <input id="pw-input" type="password" placeholder="密碼" autocomplete="off" style="padding:12px 44px 12px 16px;font-size:16px;border-radius:10px;border:1px solid #30363d;background:#161b22;color:#e6edf3;width:100%;box-sizing:border-box;text-align:center;outline:none">
+    <span id="pw-eye" title="顯示/隱藏密碼" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:19px;user-select:none">&#128065;</span>
+  </div>
   <button id="pw-btn" style="margin-top:14px;padding:11px 28px;font-size:15px;border:0;border-radius:10px;background:#2ea043;color:#fff;font-weight:700;cursor:pointer">進入</button>
   <div id="pw-err" style="color:#f85149;font-size:13px;margin-top:12px;height:16px"></div>
 </div>
@@ -34,6 +37,12 @@ _GATE = """
   }
   document.getElementById('pw-btn').onclick=check;
   document.getElementById('pw-input').addEventListener('keydown', function(e){ if(e.key==='Enter') check(); });
+  var inp=document.getElementById('pw-input'), eye=document.getElementById('pw-eye');
+  eye.onclick=function(){
+    if(inp.type==='password'){ inp.type='text'; eye.innerHTML='&#128584;'; }
+    else { inp.type='password'; eye.innerHTML='&#128065;'; }
+    inp.focus();
+  };
 })();
 </script>
 """
