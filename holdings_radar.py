@@ -595,15 +595,33 @@ def analyze_stock(symbol):
             stop_loss = f"{p_bottom:.1f}（真要短搶才設這條，跌破就走）"
             target_val = "—"
         else:
-            if p_last <= ma20 * 1.01:
-                strategy_desc = f"🟢 現在就在佈局區：已回到月線附近。{act}。"
-            elif gap_ma20 <= 8:
-                strategy_desc = f"🟡 接近佈局區：離月線 +{gap_ma20:.0f}%，等拉回或小量試。{act}。"
+            # 按實際高低排：較高的均線=淺回(近)、較低的=深回(便宜)。不寫死月線在上，
+            # 因為剛回檔時月線可能已鑽到季線之下(世禾就是)，寫死會出現「深回反而比較貴、停損在買點之上」的矛盾。
+            if ma20 >= ma60:
+                lv_hi, name_hi, lv_lo, name_lo = ma20, "月線", ma60, "季線"
             else:
-                strategy_desc = f"⏳ 目前偏高：離月線 +{gap_ma20:.0f}%，別追高，等拉回再撿。{act}。"
-            buy_range = f"月線 {ma20:.1f}（淺回撿）／季線 {ma60:.1f}（深回、較好價）"
-            stop_loss = f"季線 {ma60:.1f} 跌破站不回才走（前低 {p_bottom:.1f}）"
-            target_val = f"{max(high_60d, p_last * (1 + target_mult)):.1f}（前高／波段目標）"
+                lv_hi, name_hi, lv_lo, name_lo = ma60, "季線", ma20, "月線"
+            gap_hi = (p_last - lv_hi) / lv_hi * 100 if lv_hi else 0.0
+            tgt = max(high_60d, p_last * (1 + target_mult))
+
+            if p_last >= lv_hi:
+                if gap_hi <= 2:
+                    strategy_desc = f"🟢 現在就在佈局區：貼近{name_hi}({lv_hi:.1f})。{act}。"
+                elif gap_hi <= 8:
+                    strategy_desc = f"🟡 接近佈局區：離{name_hi} +{gap_hi:.0f}%，等拉回或小量試。{act}。"
+                else:
+                    strategy_desc = f"⏳ 目前偏高：離{name_hi} +{gap_hi:.0f}%，別追高，等拉回再撿。{act}。"
+                buy_range = f"{name_hi} {lv_hi:.1f}（淺回撿）／{name_lo} {lv_lo:.1f}（深回、較便宜）"
+                stop_loss = f"跌破 {name_lo} {lv_lo:.1f} 站不回才走（大防線前低 {p_bottom:.1f}）"
+            elif p_last >= lv_lo:
+                strategy_desc = f"🟢 正在佈局區：回檔到{name_hi}({lv_hi:.1f})與{name_lo}({lv_lo:.1f})之間。{act}。"
+                buy_range = f"現價分批／再拉回 {name_lo} {lv_lo:.1f} 加碼（深回、較便宜）"
+                stop_loss = f"跌破 {name_lo} {lv_lo:.1f} 站不回才走（前低 {p_bottom:.1f}）"
+            else:
+                strategy_desc = f"🟢 已跌破月線季線、更便宜：好股深蹲，分批接、要站回 {name_lo} {lv_lo:.1f} 才算止穩。{act}。"
+                buy_range = f"現價分批（已在 {name_lo} {lv_lo:.1f} 之下、較便宜）"
+                stop_loss = f"前低 {p_bottom:.1f} 跌破站不回才走"
+            target_val = f"{tgt:.1f}（前高／波段目標）"
 
         if worth_buy and chip_concent > 8 and total_inst > 0:
             strategy_desc += " ＋法人正在鎖碼(加分)"
