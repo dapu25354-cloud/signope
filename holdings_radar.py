@@ -9,6 +9,12 @@ import pandas as pd
 from datetime import datetime, timedelta, timezone
 from concurrent.futures import ThreadPoolExecutor
 
+# 體質判斷(真鑽石/石頭…)，跟桌面篩選器共用同一套定義
+try:
+    from diamond_filter import analyze_diamond
+except Exception:
+    analyze_diamond = None
+
 # 確保輸出支援 UTF-8
 try:
     sys.stdout.reconfigure(encoding='utf-8')
@@ -99,6 +105,8 @@ STATE_OWNED_STOCKS = {'2330.TW'}
 # 三大法人籌碼與融資快取
 _chip_cache = {}
 _margin_cache = {}
+# 體質分級快取(循序抓好再給多執行緒讀，避免併發把 .info 打掛而誤判賠錢)
+_diamond_cache = {}
 
 def _to_int(v):
     return int(str(v).replace(',', '').strip() or 0)
@@ -273,11 +281,56 @@ def is_warning_stock(symbol):
     return code in _warning_stocks
 
 # ----------------- 核心分析邏輯 -----------------
+def warm_diamond_cache(symbols):
+    """循序把每檔的體質抓好(基本面.info怕併發被擋，抓到空的會誤判賠錢)。失敗重試一次。"""
+    if analyze_diamond is None:
+        return
+    _diamond_cache.clear()
+    for sym in symbols:
+        cs = clean_symbol(sym)
+        dia = None
+        for attempt in range(2):
+            try:
+                dia = analyze_diamond(cs, get_stock_name(cs))
+                if dia and "資料不足" not in dia.get("grade", "資料不足"):
+                    break
+            except Exception:
+                dia = None
+            time.sleep(1.0)  # 被擋就等一下再試
+        if dia:
+            _diamond_cache[cs] = (dia["grade"], dia["reason"])
+        time.sleep(0.3)
+
+
+def quality_color(grade):
+    """依體質分級給顏色(綠=可長抱, 藍=波段, 橙=別重壓, 紅/灰=別碰)。"""
+    if "真鑽石" in grade:
+        return "#3fb950"   # 綠
+    if "復甦" in grade:
+        return "#2f81f7"   # 藍
+    if "估值透支" in grade or "老鑽石" in grade:
+        return "#d29922"   # 橙
+    if "鍍金" in grade:
+        return "#f85149"   # 紅
+    return "#8b949e"       # 灰(石頭/資料不足)
+
+
 def analyze_stock(symbol):
     print(f"正在分析 {symbol}...")
     try:
         cleaned = clean_symbol(symbol)
-        df = yf.download(cleaned, period="1y", progress=False)
+        # 抓失敗(401 Invalid Crumb / 臨時抽風)就等一下重試，遞增退避，避免整檔漏抓
+        df = pd.DataFrame()
+        for attempt in range(4):
+            try:
+                df = yf.download(cleaned, period="1y", progress=False)
+            except Exception:
+                df = pd.DataFrame()
+            if not df.empty:
+                break
+            time.sleep(2.0 * (attempt + 1))
+        if df.empty:
+            print(f"⚠️ {cleaned} 重試後仍抓不到資料，本次略過")
         if df.empty and cleaned.endswith(".TW"):
             alt_symbol = cleaned.replace(".TW", ".TWO")
             df = yf.download(alt_symbol, period="1y", progress=False)
@@ -549,7 +602,10 @@ def analyze_stock(symbol):
             extra_badges.append("⚔️ 超跌區")
         elif rsi_val > 70:
             extra_badges.append("🌋 超買區")
-            
+
+        # 體質判斷：直接讀「循序抓好」的快取，不在多執行緒裡抓基本面(會被 yfinance 擋成賠錢誤判)
+        q_grade, q_reason = _diamond_cache.get(cleaned, ("資料不足", "抓不到基本面"))
+
         return {
             "symbol": cleaned,
             "name": get_stock_name(cleaned),
@@ -584,7 +640,9 @@ def analyze_stock(symbol):
             "extra_badges": extra_badges,
             "bb_position": bb_position,
             "is_warning": is_warning_stock(cleaned),
-            "is_state_owned": cleaned in STATE_OWNED_STOCKS
+            "is_state_owned": cleaned in STATE_OWNED_STOCKS,
+            "q_grade": q_grade,
+            "q_reason": q_reason
         }
     except Exception as e:
         print(f"Error analyzing {symbol}: {e}")
@@ -625,8 +683,15 @@ def build_dashboard():
         print(f"快取籌碼出錯: {e}")
         
     fetch_warning_stocks()
-    
-    with ThreadPoolExecutor(max_workers=8) as executor:
+
+    print("開始判斷各股體質(真鑽石/石頭，循序抓避免誤判)...")
+    try:
+        warm_diamond_cache(watchlist)
+    except Exception as e:
+        print(f"體質判斷出錯: {e}")
+
+    # 併發降到4，太多同時打 yfinance 會觸發 401 讓部分股票漏抓
+    with ThreadPoolExecutor(max_workers=4) as executor:
         results = list(executor.map(analyze_stock, watchlist))
         
     valid_results = [r for r in results if r]
@@ -683,7 +748,13 @@ def build_dashboard():
                 <div class="badges-row">
                     {badges}
                 </div>
-                
+
+                <!-- 體質分級(能不能長抱)：跟上面的短線強弱分開看 -->
+                <div class="quality-row" style="margin:10px 0;padding:8px 10px;border-radius:8px;background:{quality_color(r['q_grade'])}18;border-left:3px solid {quality_color(r['q_grade'])}">
+                    <span style="font-weight:700;color:{quality_color(r['q_grade'])}">體質｜{r['q_grade']}</span>
+                    <div style="font-size:12px;color:#8b949e;margin-top:3px;line-height:1.5">{r['q_reason']}</div>
+                </div>
+
                 <!-- 綜合戰略分析得分 -->
                 <div class="score-section">
                     <div class="score-title">
