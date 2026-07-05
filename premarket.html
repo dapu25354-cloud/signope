@@ -7,7 +7,9 @@
 <style>
   body{margin:0;background:#0d1117;color:#e6edf3;font-family:'Noto Sans TC',sans-serif}
   .hd{padding:14px 16px 4px;font-size:18px;font-weight:700}
-  .upd{padding:0 16px 10px;color:#8b949e;font-size:12px}
+  .upd{padding:0 16px 8px;color:#8b949e;font-size:12px}
+  .filt{padding:0 16px 10px;font-size:13px;color:#8b949e}
+  select{background:#161b22;color:#e6edf3;border:1px solid #30363d;border-radius:8px;padding:8px 10px;font-size:15px;max-width:220px}
   .wrap{padding:0 10px 40px;overflow-x:auto}
   pre{font-family:Consolas,'Courier New',monospace;font-size:13px;line-height:1.55;white-space:pre;margin:0;color:#dbe1e8}
 </style></head><body>
@@ -48,11 +50,12 @@
 </script>
 
   <div class="hd">🌏 盤前國際盤</div>
-  <div class="upd">最後更新：2026-07-05 08:12（台灣時間）</div>
-  <div class="wrap"><pre>=== 🌏 盤前國際盤 → 台股影響 ===
+  <div class="upd">最後更新：2026-07-05 08:18（台灣時間）</div>
+  <div class="filt">看：<select onchange="filt(this.value)"><option value="__ALL__">全部</option><option value="台積電">台積電</option></select></div>
+  <div class="wrap"><pre id="pre"><span data-stk="__hdr__">=== 🌏 盤前國際盤 → 台股影響 ===
 
 【最關鍵：半導體 / 台積】
-  台積電ADR      434.16  ▼-2.27%  
+</span><span data-stk="台積電">  台積電ADR      434.16  ▼-2.27%  
   費城半導體     12626.22  ▼-5.44%  
 
 【美股大盤】
@@ -71,7 +74,7 @@
   銅             6.22  ▲+1.79%  (景氣需求)
 
 【加密 / 貨幣】
-  比特幣       62995.32  ▲+0.72%  (中性)
+  比特幣       62970.00  ▲+0.68%  (中性)
   美元指數        100.86  ▼-0.00%  
   美元日圓        161.34  ▼-0.74%  
   美元台幣         31.92  ▲+0.09%  
@@ -79,7 +82,14 @@
 
 ============================================
 🔻 偏空(加權-1.87%) — 開低機率大,保守。
-• 台積電ADR -2.27% → 台積電開盤方向偏空、可能開低(幅度受溢價影響)。
+</span><span data-stk="台積電">• 台積電ADR -2.27% → 台積電開盤方向偏空、可能開低(幅度受溢價影響)。
 • 亞股(日韓)同步走強 → 區域氣氛偏多,加分。
-</pre></div>
+
+</span></pre></div>
+<script>
+  function filt(v){
+    var ns=document.querySelectorAll('#pre span[data-stk]');
+    for(var i=0;i<ns.length;i++){var o=ns[i].getAttribute('data-stk');ns[i].style.display=(v==='__ALL__'||o===v||o==='__hdr__')?'':'none';}
+  }
+</script>
 </body></html>

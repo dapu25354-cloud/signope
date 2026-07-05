@@ -7,7 +7,9 @@
 <style>
   body{margin:0;background:#0d1117;color:#e6edf3;font-family:'Noto Sans TC',sans-serif}
   .hd{padding:14px 16px 4px;font-size:18px;font-weight:700}
-  .upd{padding:0 16px 10px;color:#8b949e;font-size:12px}
+  .upd{padding:0 16px 8px;color:#8b949e;font-size:12px}
+  .filt{padding:0 16px 10px;font-size:13px;color:#8b949e}
+  select{background:#161b22;color:#e6edf3;border:1px solid #30363d;border-radius:8px;padding:8px 10px;font-size:15px;max-width:220px}
   .wrap{padding:0 10px 40px;overflow-x:auto}
   pre{font-family:Consolas,'Courier New',monospace;font-size:13px;line-height:1.55;white-space:pre;margin:0;color:#dbe1e8}
 </style></head><body>
@@ -48,44 +50,52 @@
 </script>
 
   <div class="hd">🚦 轉折燈</div>
-  <div class="upd">最後更新：2026-07-05 08:12（台灣時間）</div>
-  <div class="wrap"><pre>抓取 24 檔…
+  <div class="upd">最後更新：2026-07-05 08:18（台灣時間）</div>
+  <div class="filt">看：<select onchange="filt(this.value)"><option value="__ALL__">全部</option><option value="是方">是方</option><option value="銳澤">銳澤</option><option value="智伸科">智伸科</option><option value="均華">均華</option><option value="緯創">緯創</option><option value="世界">世界</option><option value="緯穎">緯穎</option><option value="台積電">台積電</option><option value="中信金">中信金</option><option value="國票金">國票金</option><option value="大立光">大立光</option><option value="台達電">台達電</option><option value="元大金">元大金</option><option value="長榮航">長榮航</option><option value="鑽全">鑽全</option><option value="中鋼">中鋼</option><option value="順達">順達</option><option value="研華">研華</option><option value="世禾">世禾</option><option value="汎銓">汎銓</option><option value="台新金">台新金</option><option value="統一實">統一實</option><option value="寶成">寶成</option><option value="先進光">先進光</option></select></div>
+  <div class="wrap"><pre id="pre"><span data-stk="__hdr__">抓取 24 檔…
 ============================================================================
   轉折燈 v3  (勢+量+均線+K棒+RSI 五過關；上車🔺/下車🔻排前)
 ============================================================================
   編號  燈  名稱           收盤    漲跌%    量比  RSI  訊號
 ----------------------------------------------------------------------------
-  2   🔻  銳澤　　   199.5   -1.2  1.18   48  下車(賣)→轉折向下 [4/5:勢·均線·K棒·RSI]
-  15  🟠  鑽全　　    34.2   +2.2  2.80   66  死水盤整(振幅3.5%)→卡資金,汰弱換股
-  13  🔺  元大金　    67.2   +2.1  0.58   64  上車(買)→轉折向上 [3/5:均線·K棒·RSI]
-  22  🔺  統一實　    15.6   +2.6  0.83   54  上車(買)→轉折向上 [4/5:勢·均線·K棒·RSI]  ⚠但這是跌破年線的弱股→只能短線搶反彈,別當買進、別加碼長抱
-  1   🟡  是方　　   339.5   +0.9  0.74   47  量縮蓄勢(布林收窄+量縮0.74)→可能噴出,留意上車別急換  ⚠但這是跌破年線的弱股→只能短線搶反彈,別當買進、別加碼長抱
-  9   🟡  中信金　    70.6   +1.0  0.70   61  量縮蓄勢(布林收窄+量縮0.70)→可能噴出,留意上車別急換
-  10  🟡  國票金　    15.0   +1.4  0.79   53  量縮蓄勢(布林收窄+量縮0.79)→可能噴出,留意上車別急換  ⚠但這是跌破年線的弱股→只能短線搶反彈,別當買進、別加碼長抱
-  16  🔸  中鋼　　    19.0   +1.9  0.54   50  留意·彈上5日線但沒量沒站上10MA→別當買、別追 [3/5:勢·K棒·RSI]
-  4   🟢  均華　　  1125.0   -3.8  1.93   49  多頭續勢,沒轉折→續抱
-  7   🟢  緯穎　　  5265.0   +1.2  0.81   60  多頭續勢,沒轉折→續抱
-  8   🟢  台積電　  2445.0   -0.8  0.76   57  多頭續勢,沒轉折→續抱  〔⚡跳空-2.0%·查新聞〕
-  18  🟢  研華　　   521.0   +2.2  0.71   62  多頭續勢,沒轉折→續抱
-  19  🟢  世禾　　   206.0   +2.0  0.84   54  多頭續勢,沒轉折→續抱
-  21  🟢  台新金　    34.2   +3.5  1.16   77  多頭續勢,沒轉折→續抱
-  3   ⚪  智伸科　   265.0  +10.0  0.53   78  盤整,沒轉折→觀望  ⚡頂背離(轉弱前兆)  〔🔺漲停·查新聞〕
-  5   ⚪  緯創　　   159.0   +0.3  0.58   52  盤整,沒轉折→觀望
-  6   ⚪  世界　　   193.5   -2.3  0.51   55  盤整,沒轉折→觀望
-  11  ⚪  大立光　  4230.0   -1.5  0.47   50  空頭,沒轉折→別接
-  12  ⚪  台達電　  2075.0   +5.3  1.12   49  盤整,沒轉折→觀望
-  14  ⚪  長榮航　    43.8   -0.1  0.62   68  盤整,沒轉折→觀望
-  17  ⚪  順達　　   401.0   -1.4  0.26   50  盤整,沒轉折→觀望
-  20  ⚪  汎銓　　   455.0   +1.6  0.70   35  空頭,沒轉折→別接
-  23  ⚪  寶成　　    24.5   +1.5  0.93   48  盤整,沒轉折→觀望
-  24  ⚪  先進光　   187.0   -0.3  0.26   58  盤整,沒轉折→觀望
+</span><span data-stk="銳澤">  2   🔻  銳澤　　   199.5   -1.2  1.18   48  下車(賣)→轉折向下 [4/5:勢·均線·K棒·RSI]
+</span><span data-stk="鑽全">  15  🟠  鑽全　　    34.2   +2.2  2.80   66  死水盤整(振幅3.5%)→卡資金,汰弱換股
+</span><span data-stk="元大金">  13  🔺  元大金　    67.2   +2.1  0.58   64  上車(買)→轉折向上 [3/5:均線·K棒·RSI]
+</span><span data-stk="統一實">  22  🔺  統一實　    15.6   +2.6  0.83   54  上車(買)→轉折向上 [4/5:勢·均線·K棒·RSI]  ⚠但這是跌破年線的弱股→只能短線搶反彈,別當買進、別加碼長抱
+</span><span data-stk="是方">  1   🟡  是方　　   339.5   +0.9  0.74   47  量縮蓄勢(布林收窄+量縮0.74)→可能噴出,留意上車別急換  ⚠但這是跌破年線的弱股→只能短線搶反彈,別當買進、別加碼長抱
+</span><span data-stk="中信金">  9   🟡  中信金　    70.6   +1.0  0.70   61  量縮蓄勢(布林收窄+量縮0.70)→可能噴出,留意上車別急換
+</span><span data-stk="國票金">  10  🟡  國票金　    15.0   +1.4  0.79   53  量縮蓄勢(布林收窄+量縮0.79)→可能噴出,留意上車別急換  ⚠但這是跌破年線的弱股→只能短線搶反彈,別當買進、別加碼長抱
+</span><span data-stk="中鋼">  16  🔸  中鋼　　    19.0   +1.9  0.54   50  留意·彈上5日線但沒量沒站上10MA→別當買、別追 [3/5:勢·K棒·RSI]
+</span><span data-stk="均華">  4   🟢  均華　　  1125.0   -3.8  1.93   49  多頭續勢,沒轉折→續抱
+</span><span data-stk="緯穎">  7   🟢  緯穎　　  5265.0   +1.2  0.81   60  多頭續勢,沒轉折→續抱
+</span><span data-stk="台積電">  8   🟢  台積電　  2445.0   -0.8  0.76   57  多頭續勢,沒轉折→續抱  〔⚡跳空-2.0%·查新聞〕
+</span><span data-stk="研華">  18  🟢  研華　　   521.0   +2.2  0.71   62  多頭續勢,沒轉折→續抱
+</span><span data-stk="世禾">  19  🟢  世禾　　   206.0   +2.0  0.84   54  多頭續勢,沒轉折→續抱
+</span><span data-stk="台新金">  21  🟢  台新金　    34.2   +3.5  1.16   77  多頭續勢,沒轉折→續抱
+</span><span data-stk="智伸科">  3   ⚪  智伸科　   265.0  +10.0  0.53   78  盤整,沒轉折→觀望  ⚡頂背離(轉弱前兆)  〔🔺漲停·查新聞〕
+</span><span data-stk="緯創">  5   ⚪  緯創　　   159.0   +0.3  0.58   52  盤整,沒轉折→觀望
+</span><span data-stk="世界">  6   ⚪  世界　　   193.5   -2.3  0.51   55  盤整,沒轉折→觀望
+</span><span data-stk="大立光">  11  ⚪  大立光　  4230.0   -1.5  0.47   50  空頭,沒轉折→別接
+</span><span data-stk="台達電">  12  ⚪  台達電　  2075.0   +5.3  1.12   49  盤整,沒轉折→觀望
+</span><span data-stk="長榮航">  14  ⚪  長榮航　    43.8   -0.1  0.62   68  盤整,沒轉折→觀望
+</span><span data-stk="順達">  17  ⚪  順達　　   401.0   -1.4  0.26   50  盤整,沒轉折→觀望
+</span><span data-stk="汎銓">  20  ⚪  汎銓　　   455.0   +1.6  0.70   35  空頭,沒轉折→別接
+</span><span data-stk="寶成">  23  ⚪  寶成　　    24.5   +1.5  0.93   48  盤整,沒轉折→觀望
+</span><span data-stk="先進光">  24  ⚪  先進光　   187.0   -0.3  0.26   58  盤整,沒轉折→觀望
 ============================================================================
-  🔻 下車(賣)：銳澤
-  🟠 死水換股(卡資金,汰弱)：鑽全
-  🔺 上車(買·站上年線的強勢股)：元大金
-  ⚠ 技術轉強但破年線弱股(只能短搶,別買進/加碼)：統一實
-  🟡 量縮蓄勢(準備噴,留意)：是方、中信金、國票金
-  🔸 疑似(待確認)：中鋼
+</span><span data-stk="銳澤">  🔻 下車(賣)：銳澤
+</span><span data-stk="鑽全">  🟠 死水換股(卡資金,汰弱)：鑽全
+</span><span data-stk="元大金">  🔺 上車(買·站上年線的強勢股)：元大金
+</span><span data-stk="統一實">  ⚠ 技術轉強但破年線弱股(只能短搶,別買進/加碼)：統一實
+</span><span data-stk="是方">  🟡 量縮蓄勢(準備噴,留意)：是方、中信金、國票金
+</span><span data-stk="中鋼">  🔸 疑似(待確認)：中鋼
   RSI&gt;70過熱、&lt;30過冷；⚡背離=轉折前兆，要留意
-</pre></div>
+
+</span></pre></div>
+<script>
+  function filt(v){
+    var ns=document.querySelectorAll('#pre span[data-stk]');
+    for(var i=0;i<ns.length;i++){var o=ns[i].getAttribute('data-stk');ns[i].style.display=(v==='__ALL__'||o===v||o==='__hdr__')?'':'none';}
+  }
+</script>
 </body></html>

@@ -61,13 +61,22 @@ PAGE_TPL = """<!DOCTYPE html>
 <style>
   body{margin:0;background:#0d1117;color:#e6edf3;font-family:'Noto Sans TC',sans-serif}
   .hd{padding:14px 16px 4px;font-size:18px;font-weight:700}
-  .upd{padding:0 16px 10px;color:#8b949e;font-size:12px}
+  .upd{padding:0 16px 8px;color:#8b949e;font-size:12px}
+  .filt{padding:0 16px 10px;font-size:13px;color:#8b949e}
+  select{background:#161b22;color:#e6edf3;border:1px solid #30363d;border-radius:8px;padding:8px 10px;font-size:15px;max-width:220px}
   .wrap{padding:0 10px 40px;overflow-x:auto}
   pre{font-family:Consolas,'Courier New',monospace;font-size:13px;line-height:1.55;white-space:pre;margin:0;color:#dbe1e8}
 </style></head><body>
   <div class="hd">__TITLE__</div>
   <div class="upd">最後更新：__UPD__（台灣時間）</div>
-  <div class="wrap"><pre>__BODY__</pre></div>
+  <div class="filt">看：<select onchange="filt(this.value)"><option value="__ALL__">全部</option>__SELECT__</select></div>
+  <div class="wrap"><pre id="pre">__BODY__</pre></div>
+<script>
+  function filt(v){
+    var ns=document.querySelectorAll('#pre span[data-stk]');
+    for(var i=0;i<ns.length;i++){var o=ns[i].getAttribute('data-stk');ns[i].style.display=(v==='__ALL__'||o===v||o==='__hdr__')?'':'none';}
+  }
+</script>
 </body></html>"""
 
 SHELL_TPL = """<!DOCTYPE html>
@@ -113,10 +122,46 @@ TEXT_TOOLS = [
 ]
 
 
-def text_page(title, body_text, upd):
+def load_names():
+    import json
+    try:
+        data = json.load(open(os.path.join(HERE, "watch_list.json"), encoding="utf-8"))
+        return [it["name"] for it in data if it.get("name")]
+    except Exception:
+        return []
+
+
+def segment_html(text, names):
+    """把報表文字依股名切成區塊，每塊包成 <span data-stk=股名>，下拉可只顯示某一檔。
+    沒股名的開頭/標題行歸 __hdr__(永遠顯示)；接在某股名後面的說明行歸該股。"""
+    lines = text.split("\n")
+    segs = []            # (owner, [lines])
+    owner, cur = "__hdr__", []
+    for ln in lines:
+        found = next((nm for nm in names if nm and nm in ln), None)
+        if found:
+            if cur:
+                segs.append((owner, cur))
+            owner, cur = found, [ln]
+        else:
+            cur.append(ln)
+    if cur:
+        segs.append((owner, cur))
+    parts = []
+    for own, ls in segs:
+        chunk = "\n".join(ls) + "\n"
+        parts.append('<span data-stk="%s">%s</span>' % (esc(own), esc(chunk)))
+    return "".join(parts)
+
+
+def text_page(title, body_text, upd, names):
+    present = [n for n in names if n in body_text]          # 只列這頁真的有出現的股
+    opts = "".join('<option value="%s">%s</option>' % (esc(n), esc(n)) for n in present)
+    body = segment_html(body_text, names)
     html = (PAGE_TPL.replace("__TITLE__", title)
                     .replace("__UPD__", upd)
-                    .replace("__BODY__", esc(body_text)))
+                    .replace("__SELECT__", opts)
+                    .replace("__BODY__", body))
     return lock_inject(html)
 
 
@@ -130,11 +175,12 @@ def shell():
 
 def main():
     upd = now_str()
+    names = load_names()
     for title, fname, fn in TEXT_TOOLS:
         print(f"產生 {title} 頁…")
         txt = capture(fn)
         with open(os.path.join(HERE, fname), "w", encoding="utf-8") as f:
-            f.write(text_page(title, txt, upd))
+            f.write(text_page(title, txt, upd, names))
     with open(os.path.join(HERE, "index.html"), "w", encoding="utf-8") as f:
         f.write(shell())
     print("已產生所有工具頁 + index.html(頁籤外框)")

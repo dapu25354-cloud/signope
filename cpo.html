@@ -7,7 +7,9 @@
 <style>
   body{margin:0;background:#0d1117;color:#e6edf3;font-family:'Noto Sans TC',sans-serif}
   .hd{padding:14px 16px 4px;font-size:18px;font-weight:700}
-  .upd{padding:0 16px 10px;color:#8b949e;font-size:12px}
+  .upd{padding:0 16px 8px;color:#8b949e;font-size:12px}
+  .filt{padding:0 16px 10px;font-size:13px;color:#8b949e}
+  select{background:#161b22;color:#e6edf3;border:1px solid #30363d;border-radius:8px;padding:8px 10px;font-size:15px;max-width:220px}
   .wrap{padding:0 10px 40px;overflow-x:auto}
   pre{font-family:Consolas,'Courier New',monospace;font-size:13px;line-height:1.55;white-space:pre;margin:0;color:#dbe1e8}
 </style></head><body>
@@ -48,15 +50,16 @@
 </script>
 
   <div class="hd">🔭 CPO矽光子觀察</div>
-  <div class="upd">最後更新：2026-07-05 08:12（台灣時間）</div>
-  <div class="wrap"><pre>=== 🔭 CPO/矽光子 觀察雷達 (尚未持有) ===
+  <div class="upd">最後更新：2026-07-05 08:18（台灣時間）</div>
+  <div class="filt">看：<select onchange="filt(this.value)"><option value="__ALL__">全部</option><option value="台積電">台積電</option></select></div>
+  <div class="wrap"><pre id="pre"><span data-stk="__hdr__">=== 🔭 CPO/矽光子 觀察雷達 (尚未持有) ===
 
   華星光(4979.TWO)  市價 468.5  (🔺今日噴出 +5.3%)  20MA 510  60MA 572  RSI 44
     AI資料中心高階光模組,800G放量、1.6T接棒
     ⚠️ 均線仍走弱(60日線 572下) — 結構未轉強,別追。 但今天噴 +5.3%,是跌深反彈第一根,看明天守不守得住、量有沒有續,別第一根就追。
 
   上詮(3363.TWO)  市價 581.0  (🔺今日噴出 +9.8%)  20MA 683  60MA 783  RSI 27
-    光纖封裝,受惠台積電嘉義廠
+</span><span data-stk="台積電">    光纖封裝,受惠台積電嘉義廠
     ⚠️ 均線仍走弱(60日線 783下) — 結構未轉強,別追。 但今天噴 +9.8%,是跌深反彈第一根,看明天守不守得住、量有沒有續,別第一根就追。
 
   日月光投控(3711.TW)  市價 682.0  (🔻今日急殺 -6.2%)  20MA 616  60MA 547  RSI 68
@@ -64,5 +67,12 @@
     ⚪ 強但不極端(距季高 -5%) — 續觀察,等更好的拉回點。
 
 要上手前跟我說,我幫該檔做完整功課(基本面/法人/進場點)再決定。源傑曝險用聯鈞。
-</pre></div>
+
+</span></pre></div>
+<script>
+  function filt(v){
+    var ns=document.querySelectorAll('#pre span[data-stk]');
+    for(var i=0;i<ns.length;i++){var o=ns[i].getAttribute('data-stk');ns[i].style.display=(v==='__ALL__'||o===v||o==='__hdr__')?'':'none';}
+  }
+</script>
 </body></html>

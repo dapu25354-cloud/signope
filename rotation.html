@@ -7,7 +7,9 @@
 <style>
   body{margin:0;background:#0d1117;color:#e6edf3;font-family:'Noto Sans TC',sans-serif}
   .hd{padding:14px 16px 4px;font-size:18px;font-weight:700}
-  .upd{padding:0 16px 10px;color:#8b949e;font-size:12px}
+  .upd{padding:0 16px 8px;color:#8b949e;font-size:12px}
+  .filt{padding:0 16px 10px;font-size:13px;color:#8b949e}
+  select{background:#161b22;color:#e6edf3;border:1px solid #30363d;border-radius:8px;padding:8px 10px;font-size:15px;max-width:220px}
   .wrap{padding:0 10px 40px;overflow-x:auto}
   pre{font-family:Consolas,'Courier New',monospace;font-size:13px;line-height:1.55;white-space:pre;margin:0;color:#dbe1e8}
 </style></head><body>
@@ -48,42 +50,50 @@
 </script>
 
   <div class="hd">📡 庫存輪動雷達</div>
-  <div class="upd">最後更新：2026-07-05 08:12（台灣時間）</div>
-  <div class="wrap"><pre>=== 輪動雷達 (rotation_radar) — 同組由強到弱排序 ===
+  <div class="upd">最後更新：2026-07-05 08:18（台灣時間）</div>
+  <div class="filt">看：<select onchange="filt(this.value)"><option value="__ALL__">全部</option><option value="是方">是方</option><option value="銳澤">銳澤</option><option value="智伸科">智伸科</option><option value="均華">均華</option><option value="緯創">緯創</option><option value="世界">世界</option><option value="緯穎">緯穎</option><option value="台積電">台積電</option><option value="中信金">中信金</option><option value="國票金">國票金</option><option value="大立光">大立光</option><option value="台達電">台達電</option><option value="元大金">元大金</option><option value="長榮航">長榮航</option><option value="鑽全">鑽全</option><option value="中鋼">中鋼</option><option value="順達">順達</option><option value="研華">研華</option><option value="世禾">世禾</option><option value="汎銓">汎銓</option><option value="台新金">台新金</option></select></div>
+  <div class="wrap"><pre id="pre"><span data-stk="__hdr__">=== 輪動雷達 (rotation_radar) — 同組由強到弱排序 ===
 
 【金融】
-  台新金   市價   34.1 | 月 +19.6% 季 +38.3% | 距季高 +0.0% | RSI  79 | 站上20MA +8.6% 60MA+28.5% | 多頭
-  元大金   市價   67.2 | 月  +5.2% 季 +42.7% | 距季高 -2.3% | RSI  65 | 站上20MA +2.5% 60MA+15.8% | 多頭
-  中信金   市價   70.6 | 月  +3.8% 季 +25.0% | 距季高 -2.5% | RSI  61 | 站上20MA +1.3% 60MA+16.6% | 多頭
-  國票金   市價   15.0 | 月  -1.0% 季  -2.3% | 距季高 -2.9% | RSI  50 | 站上20MA +0.2% 60MA +0.9% | 多頭
+</span><span data-stk="台新金">  台新金   市價   34.1 | 月 +19.6% 季 +38.3% | 距季高 +0.0% | RSI  79 | 站上20MA +8.6% 60MA+28.5% | 多頭
+</span><span data-stk="元大金">  元大金   市價   67.2 | 月  +5.2% 季 +42.7% | 距季高 -2.3% | RSI  65 | 站上20MA +2.5% 60MA+15.8% | 多頭
+</span><span data-stk="中信金">  中信金   市價   70.6 | 月  +3.8% 季 +25.0% | 距季高 -2.5% | RSI  61 | 站上20MA +1.3% 60MA+16.6% | 多頭
+</span><span data-stk="國票金">  國票金   市價   15.0 | 月  -1.0% 季  -2.3% | 距季高 -2.9% | RSI  50 | 站上20MA +0.2% 60MA +0.9% | 多頭
 
 【半導體設備/耗材/檢測】
-  世禾    市價  206.0 | 月  +0.0% 季 +17.0% | 距季高 -8.4% | RSI  60 | 站上20MA +4.0% 60MA +2.0% | 多頭
-  均華    市價 1125.0 | 月  -5.0% 季 -21.9% | 距季高-35.2% | RSI  56 | 站上20MA +4.3% 60MA-14.3% | 整理
-  汎銓    市價  455.0 | 月 -32.7% 季 -31.2% | 距季高-53.3% | RSI  43 | 站上20MA-12.9% 60MA-33.6% | 空頭
+</span><span data-stk="世禾">  世禾    市價  206.0 | 月  +0.0% 季 +17.0% | 距季高 -8.4% | RSI  60 | 站上20MA +4.0% 60MA +2.0% | 多頭
+</span><span data-stk="均華">  均華    市價 1125.0 | 月  -5.0% 季 -21.9% | 距季高-35.2% | RSI  56 | 站上20MA +4.3% 60MA-14.3% | 整理
+</span><span data-stk="汎銓">  汎銓    市價  455.0 | 月 -32.7% 季 -31.2% | 距季高-53.3% | RSI  43 | 站上20MA-12.9% 60MA-33.6% | 空頭
 
 【AI伺服器代工】
-  緯穎    市價 5265.0 | 月  -2.7% 季 +51.8% | 距季高 -6.4% | RSI  64 | 站上20MA +8.2% 60MA+11.0% | 多頭
-  緯創    市價  159.0 | 月  -9.7% 季 +21.4% | 距季高-18.0% | RSI  54 | 站上20MA -0.4% 60MA +6.2% | 整理
+</span><span data-stk="緯穎">  緯穎    市價 5265.0 | 月  -2.7% 季 +51.8% | 距季高 -6.4% | RSI  64 | 站上20MA +8.2% 60MA+11.0% | 多頭
+</span><span data-stk="緯創">  緯創    市價  159.0 | 月  -9.7% 季 +21.4% | 距季高-18.0% | RSI  54 | 站上20MA -0.4% 60MA +6.2% | 整理
 
 【半導體製造/IP】
-  世界先進  市價  193.5 | 月 +18.7% 季 +47.7% | 距季高-12.0% | RSI  59 | 站上20MA +5.4% 60MA+17.9% | 多頭
-  台積電   市價 2445.0 | 月  +2.8% 季 +25.7% | 距季高 -2.6% | RSI  61 | 站上20MA +2.6% 60MA +8.2% | 多頭
+</span><span data-stk="世界">  世界先進  市價  193.5 | 月 +18.7% 季 +47.7% | 距季高-12.0% | RSI  59 | 站上20MA +5.4% 60MA+17.9% | 多頭
+</span><span data-stk="台積電">  台積電   市價 2445.0 | 月  +2.8% 季 +25.7% | 距季高 -2.6% | RSI  61 | 站上20MA +2.6% 60MA +8.2% | 多頭
 
 【雲端/工業電腦/電源】
-  研華    市價  521.0 | 月  -0.2% 季 +49.5% | 距季高 -0.2% | RSI  65 | 站上20MA +7.4% 60MA+16.7% | 多頭
-  台達電   市價 2075.0 | 月 -14.0% 季 +25.3% | 距季高-17.2% | RSI  41 | 站上20MA -1.4% 60MA -1.2% | 反彈
-  是方    市價  339.5 | 月  -8.4% 季  -7.0% | 距季高-10.2% | RSI  51 | 站上20MA -0.5% 60MA -3.1% | 空頭
+</span><span data-stk="研華">  研華    市價  521.0 | 月  -0.2% 季 +49.5% | 距季高 -0.2% | RSI  65 | 站上20MA +7.4% 60MA+16.7% | 多頭
+</span><span data-stk="台達電">  台達電   市價 2075.0 | 月 -14.0% 季 +25.3% | 距季高-17.2% | RSI  41 | 站上20MA -1.4% 60MA -1.2% | 反彈
+</span><span data-stk="是方">  是方    市價  339.5 | 月  -8.4% 季  -7.0% | 距季高-10.2% | RSI  51 | 站上20MA -0.5% 60MA -3.1% | 空頭
 
 【精密零件/扣件】
-  智伸科   市價  265.0 | 月 +82.8% 季+100.8% | 距季高 +0.0% | RSI  84 | 站上20MA+32.3% 60MA+62.9% | 多頭
-  鑽全    市價   34.2 | 月  +1.8% 季  +5.4% | 距季高 +0.0% | RSI  65 | 站上20MA +2.6% 60MA +3.9% | 多頭
+</span><span data-stk="智伸科">  智伸科   市價  265.0 | 月 +82.8% 季+100.8% | 距季高 +0.0% | RSI  84 | 站上20MA+32.3% 60MA+62.9% | 多頭
+</span><span data-stk="鑽全">  鑽全    市價   34.2 | 月  +1.8% 季  +5.4% | 距季高 +0.0% | RSI  65 | 站上20MA +2.6% 60MA +3.9% | 多頭
 
 【其他單兵】
-  大立光   市價 4230.0 | 月 +10.6% 季 +85.5% | 距季高-18.6% | RSI  54 | 站上20MA -5.5% 60MA+21.7% | 整理
-  長榮航   市價   43.9 | 月 +15.7% 季 +24.6% | 距季高 -2.3% | RSI  74 | 站上20MA +6.1% 60MA+18.1% | 多頭
-  順達    市價  401.0 | 月  -9.1% 季  +9.0% | 距季高-12.0% | RSI  48 | 站上20MA -0.9% 60MA +3.7% | 整理
-  中鋼    市價   18.9 | 月  -1.6% 季  -5.0% | 距季高 -7.6% | RSI  51 | 站上20MA +0.1% 60MA -0.4% | 整理
-  銳澤    市價  199.5 | 月  +0.1% 季  -6.9% | 距季高-15.0% | RSI  52 | 站上20MA -0.3% 60MA -2.8% | 空頭
-</pre></div>
+</span><span data-stk="大立光">  大立光   市價 4230.0 | 月 +10.6% 季 +85.5% | 距季高-18.6% | RSI  54 | 站上20MA -5.5% 60MA+21.7% | 整理
+</span><span data-stk="長榮航">  長榮航   市價   43.9 | 月 +15.7% 季 +24.6% | 距季高 -2.3% | RSI  74 | 站上20MA +6.1% 60MA+18.1% | 多頭
+</span><span data-stk="順達">  順達    市價  401.0 | 月  -9.1% 季  +9.0% | 距季高-12.0% | RSI  48 | 站上20MA -0.9% 60MA +3.7% | 整理
+</span><span data-stk="中鋼">  中鋼    市價   18.9 | 月  -1.6% 季  -5.0% | 距季高 -7.6% | RSI  51 | 站上20MA +0.1% 60MA -0.4% | 整理
+</span><span data-stk="銳澤">  銳澤    市價  199.5 | 月  +0.1% 季  -6.9% | 距季高-15.0% | RSI  52 | 站上20MA -0.3% 60MA -2.8% | 空頭
+
+</span></pre></div>
+<script>
+  function filt(v){
+    var ns=document.querySelectorAll('#pre span[data-stk]');
+    for(var i=0;i<ns.length;i++){var o=ns[i].getAttribute('data-stk');ns[i].style.display=(v==='__ALL__'||o===v||o==='__hdr__')?'':'none';}
+  }
+</script>
 </body></html>
