@@ -87,6 +87,7 @@ SHELL_TPL = """<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'><circle cx='9' cy='35' r='5' fill='%2358a6ff'/><path d='M9 21 A14 14 0 0 1 23 35' fill='none' stroke='%2358a6ff' stroke-width='4' stroke-linecap='round'/><path d='M9 11 A24 24 0 0 1 33 35' fill='none' stroke='%2358a6ff' stroke-width='4' stroke-linecap='round' opacity='.55'/></svg>">
 <title>描訊理財網 Signope</title>
 <style>
   html,body{margin:0;height:100%;background:#0d1117;font-family:'Noto Sans TC',sans-serif}
@@ -189,11 +190,14 @@ HOME_TPL = """<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'><circle cx='9' cy='35' r='5' fill='%2358a6ff'/><path d='M9 21 A14 14 0 0 1 23 35' fill='none' stroke='%2358a6ff' stroke-width='4' stroke-linecap='round'/><path d='M9 11 A24 24 0 0 1 33 35' fill='none' stroke='%2358a6ff' stroke-width='4' stroke-linecap='round' opacity='.55'/></svg>">
 <title>描訊理財網 Signope</title>
 <style>
   body{margin:0;background:#0d1117;color:#e6edf3;font-family:'Noto Sans TC',sans-serif;padding:14px 12px 40px}
-  h1{font-size:22px;margin:2px 0 0}
-  .en{font-size:12px;color:#58a6ff;letter-spacing:3px;font-weight:700;margin:1px 0 14px;text-transform:uppercase}
+  .brand{display:flex;align-items:center;gap:11px;margin:4px 0 3px}
+  .logo{width:44px;height:44px;flex:0 0 auto}
+  .cn{font-size:21px;font-weight:800;line-height:1.1;color:#e6edf3}
+  .en{font-size:11px;color:#58a6ff;letter-spacing:4px;font-weight:700;margin-top:3px;text-transform:uppercase}
   .upd{color:#8b949e;font-size:11.5px;margin-bottom:16px}
   .gtitle{font-size:13px;font-weight:700;margin:12px 0 6px;padding-left:2px}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:5px}
@@ -203,8 +207,18 @@ HOME_TPL = """<!DOCTYPE html>
   .tname{font-size:11px;font-weight:700;margin-top:2px}
   .tdesc{font-size:8.5px;color:#8b949e;margin-top:0;line-height:1.3}
 </style></head><body>
-  <h1>📡 描訊理財網</h1>
-  <div class="en">Signope</div>
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="9" cy="35" r="3.6" fill="#58a6ff"/>
+      <path d="M9 23 A12 12 0 0 1 21 35" fill="none" stroke="#58a6ff" stroke-width="3.2" stroke-linecap="round" opacity=".85"/>
+      <path d="M9 15 A20 20 0 0 1 29 35" fill="none" stroke="#58a6ff" stroke-width="3.2" stroke-linecap="round" opacity=".55"/>
+      <path d="M9 7 A28 28 0 0 1 37 35" fill="none" stroke="#58a6ff" stroke-width="3.2" stroke-linecap="round" opacity=".3"/>
+    </svg>
+    <div>
+      <div class="cn">描訊理財網</div>
+      <div class="en">Signope</div>
+    </div>
+  </div>
   <div class="upd">更新 __UPD__ · 點方塊進入工具，工具頁左上角「🏠首頁」可回來</div>
   __CARDS__
 </body></html>"""
