@@ -91,6 +91,7 @@ TABS = [
     ("加碼區", "add_zone.html"),
     ("真鑽石篩選", "diamonds.html"),
     ("轉折燈", "turning.html"),
+    ("🔒關卡", "levels.html"),   # 私人加密頁(內容是密文，需專屬密碼解)
 ]
 
 

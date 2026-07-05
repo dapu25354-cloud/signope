@@ -27,3 +27,6 @@ desktop.ini
 
 # Logs
 *.log
+# 私人部位檔(含成本/持股/停損)絕不上傳公開倉庫
+*_levels.py
+levels_watch.py
