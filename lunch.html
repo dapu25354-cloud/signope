@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-TW"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<title>午餐小抄（加密）</title>
+<style>
+  body{margin:0;background:#0d1117;color:#e6edf3;font-family:'Noto Sans TC',sans-serif}
+  #gate{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+  #gate .t{font-size:18px;margin-bottom:6px;text-align:center}
+  #gate .s{font-size:12px;color:#8b949e;margin-bottom:14px;text-align:center}
+  .box{position:relative;width:240px}
+  #pw{padding:12px 44px 12px 16px;font-size:16px;border-radius:10px;border:1px solid #30363d;background:#161b22;color:#e6edf3;width:100%;box-sizing:border-box;text-align:center;outline:none}
+  #eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:19px;user-select:none}
+  #go{margin-top:14px;padding:11px 28px;font-size:15px;border:0;border-radius:10px;background:#8957e5;color:#fff;font-weight:700;cursor:pointer}
+  #err{color:#f85149;font-size:13px;margin-top:12px;height:16px}
+  .hd{padding:14px 16px 4px;font-size:18px;font-weight:700}
+  .wrap{padding:0 10px 40px;overflow-x:auto}
+  pre{font-family:Consolas,'Courier New',monospace;font-size:13px;line-height:1.55;white-space:pre;margin:0;color:#dbe1e8}
+</style></head><body>
+<div id="gate">
+  <div class="t">&#128274; 午餐小抄（私人加密）</div>
+  <div class="s">輸入專屬密碼才會解開私人內容</div>
+  <div class="box">
+    <input id="pw" type="password" placeholder="專屬密碼" autocomplete="off">
+    <span id="eye" title="顯示/隱藏">&#128065;</span>
+  </div>
+  <button id="go">解開</button>
+  <div id="err"></div>
+</div>
+<div id="content" style="display:none">
+  <div class="hd">午餐小抄</div>
+  <div class="wrap"><pre id="txt"></pre></div>
+</div>
+<script>
+  var SALT="hyE8+RbH+ZLiY5lgkoFykg==", IV="Qs1IN4ZWz8JtWWx0", CT="6dLkrY6ssHSJ8DtfeyuRXZu6keuKi3ho9XrsPMeBILVxVJ/AMAW8EzxuBM8U6yzdy52rmjcE45KLqs9JUFB/FsT1hihg8Vv8pHF6kIZUqCi4OF3GPPCSD5FgrECrXoR+GeabWFD3FQ3pYOVxJFgEKq0euu3KyXwbKF15+r/DafnjvSukFQrVVDN9LNgs1IEXwzMHsa1rtAP1V1yPollu5hLP1Cap17kwyj/Rh1FE+EO0/BCVys9Zk6bfqK7ujkDIveWdPRhPncygj9a1xH+JRwmnKIKgxv6U2NF+/CH/hai7tcf99QI58TXR+acxEgFr76VdehTgLaczYA/Dk01AWu3WO3JEN3udYrakvdl6fCgP0ARWL9oHNVhHQqLQ9CaOOtIdzzFebdn4rJQ8Gznn+xKS4jscaBnCjIpDjEfhCUY4y8tt4fe/nBNBdJu3zVPexY/xjSH4pYVmFNMO+x9yu6xCKX2rrzuP5H8Gbf/6i/ivU5lXkqUeXUasWrccufledQ707+bnHDegpKCBwntZk60wXLevAzpiNLb0asdyUweZYcHb7ciZeriwYmKc7wtWY2hAPcAUwdtZ7IzU8kDYkQbp2/DMFOsn1a6aHZtlZtlt/llm57B8X0HvwtpZhQukT6lKfiGQCNwsSEK4zp7vsDOtkg+wBdUFizx5OTBXriqt9qo7VaeZUdwEUD1CCr0FVcqG2lr1R8xSA5EbRr92T/COJPkCpD5HDUB07xjvZVpC+oeSoW+UgnQIUZvzrgixQ4gCaysTAvzBXa0osWcbpfYokYjNk4yptaCkIRyp7HApTrGJvx4a1YYhDi7DywLxzDF/n/d8yiTvPhggl2xh1iP1xCGR6x68IbgxStclc4eH0jneMtBb6IuZ4IJI7rET4JP0KZWBXhFSxcCCldUy0PL5baT8hWWXkP0FHjWc05tTseMpz53k6b7W7tOZTtKZcW4o7uecl/VgU3rl4FsQ9L4+jI1X2TCitasLlRlyLYsYb8k8aVW27vospHX7PSxXyg==", ITER=200000, NAMES=["是方", "銳澤", "智伸科", "均華", "緯創", "世界", "緯穎", "台積電", "中信金", "國票金", "大立光", "台達電", "元大金", "長榮航", "鑽全", "中鋼", "順達", "研華", "世禾", "汎銓", "台新金", "統一實", "寶成", "先進光"];
+  function b64d(s){var bin=atob(s);var a=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a;}
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  window.filt=function(v){var ns=document.querySelectorAll('#txt span[data-stk]');for(var i=0;i<ns.length;i++){var o=ns[i].getAttribute('data-stk');ns[i].style.display=(o==='__hdr__'||v==='__ALL__'||(o===v&&v!=='__NONE__'))?'':'none';}};
+  async function decrypt(){
+    var pw=document.getElementById('pw').value;
+    try{
+      var km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
+      var key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:b64d(SALT),iterations:ITER,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['decrypt']);
+      var pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64d(IV)},key,b64d(CT));
+      var plain=new TextDecoder().decode(pt).replace(/\r/g,'\n');
+      // 依股名把內容切成 span，供下拉篩選
+      var lines=plain.split('\n'), out=[], owner='__hdr__', cur=[];
+      function flush(){ if(cur.length){ out.push('<span data-stk="'+owner+'">'+esc(cur.join('\n')+'\n')+'</span>'); } }
+      for(var i=0;i<lines.length;i++){ var ln=lines[i], f=null; for(var k=0;k<NAMES.length;k++){ if(ln.indexOf(NAMES[k])>=0){f=NAMES[k];break;} } if(f){ flush(); cur=[ln]; owner=f; } else { cur.push(ln); } }
+      flush();
+      document.getElementById('txt').innerHTML=out.join('');
+      var present=[]; for(var k=0;k<NAMES.length;k++){ if(plain.indexOf(NAMES[k])>=0) present.push(NAMES[k]); }
+      try{ window.parent.encReady(present); }catch(e){}
+      document.getElementById('gate').style.display='none';
+      document.getElementById('content').style.display='block';
+    }catch(e){ document.getElementById('err').textContent='密碼錯誤或解密失敗，再試一次'; }
+  }
+  document.getElementById('go').onclick=decrypt;
+  document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')decrypt();});
+  var inp=document.getElementById('pw'),eye=document.getElementById('eye');
+  eye.onclick=function(){ if(inp.type==='password'){inp.type='text';eye.innerHTML='&#128584;';}else{inp.type='password';eye.innerHTML='&#128065;';} inp.focus(); };
+</script>
+</body></html>

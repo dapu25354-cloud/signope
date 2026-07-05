@@ -145,6 +145,7 @@ TABS = [
     ("冷血獵殺", "cold.html"),
     ("恐慌接刀", "panic.html"),
     ("第二腳", "secondleg.html"),
+    ("🍱午餐小抄", "lunch.html"),  # 私人加密頁(含部位，密文)
     ("🛡️守線", "support.html"),   # 私人加密頁(防守線+策略，密文)
     ("🔒關卡", "levels.html"),     # 私人加密頁(成本/持股，密文)
 ]
@@ -179,6 +180,7 @@ HOME_GROUPS = [
         ("secondleg.html", "🐺", "第二腳", "回測接點"),
     ]),
     ("🔒 寶挖挖", "#2ea043", [
+        ("lunch.html", "🍱", "午餐小抄", "盤中看這張"),
         ("add_zone.html", "📈", "加碼區", "拉回加碼點"),
         ("support.html", "🛡️", "守線小幫手", "防守線"),
         ("levels.html", "🎯", "關卡小工具", "成本關卡"),
@@ -283,7 +285,7 @@ def shell():
     # 只有這些頁籤才顯示下拉(有個股可篩)。盤前=國際盤沒個股→不顯示
     watch_tabs = ["radar.html", "diamonds.html", "turning.html", "chips.html", "rotation.html",
                   "cold.html", "panic.html", "secondleg.html"]
-    enc_tabs = ["add_zone.html", "support.html", "levels.html"]   # 加密頁：解密後才由 encReady 填股單
+    enc_tabs = ["lunch.html", "add_zone.html", "support.html", "levels.html"]   # 加密頁：解密後才由 encReady 填股單
     filterable = json.dumps(watch_tabs + ["cpo.html"] + enc_tabs)
     # 各頁籤的「固定股單」：觀察24檔 / CPO那幾檔。下拉選項用這個，才會完整(不靠內容硬抓)
     watch = load_names()

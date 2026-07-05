@@ -29,8 +29,19 @@ import levels_watch
 import support_level
 import add_zone
 
+
+def _lunch_note():
+    # 午餐小抄：每天 Claude 幫她寫、存進本機 lunch_note.txt(含部位，gitignore 不上傳)。
+    p = os.path.join(HERE, "lunch_note.txt")
+    if os.path.exists(p):
+        print(open(p, encoding="utf-8").read())
+    else:
+        print("（今天的午餐小抄還沒更新）")
+
+
 # (顯示名, 輸出檔, 要跑的函式)。這些都是私人內容、都會加密。
 PAGES = [
+    ("午餐小抄", "lunch.html", _lunch_note),
     ("關卡小工具", "levels.html", lambda: levels_watch.run()),
     ("守線小幫手", "support.html", lambda: support_level.main()),
 ]
