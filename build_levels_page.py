@@ -83,15 +83,25 @@ HTML = """<!DOCTYPE html>
   <div class="wrap"><pre id="txt"></pre></div>
 </div>
 <script>
-  var SALT="__SALT__", IV="__IV__", CT="__CT__", ITER=__ITER__;
+  var SALT="__SALT__", IV="__IV__", CT="__CT__", ITER=__ITER__, NAMES=__NAMES__;
   function b64d(s){var bin=atob(s);var a=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a;}
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  window.filt=function(v){var ns=document.querySelectorAll('#txt span[data-stk]');for(var i=0;i<ns.length;i++){var o=ns[i].getAttribute('data-stk');ns[i].style.display=(o==='__hdr__'||v==='__ALL__'||(o===v&&v!=='__NONE__'))?'':'none';}};
   async function decrypt(){
     var pw=document.getElementById('pw').value;
     try{
       var km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
       var key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:b64d(SALT),iterations:ITER,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['decrypt']);
       var pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64d(IV)},key,b64d(CT));
-      document.getElementById('txt').textContent=new TextDecoder().decode(pt);
+      var plain=new TextDecoder().decode(pt).replace(/\\r/g,'\\n');
+      // 依股名把內容切成 span，供下拉篩選
+      var lines=plain.split('\\n'), out=[], owner='__hdr__', cur=[];
+      function flush(){ if(cur.length){ out.push('<span data-stk="'+owner+'">'+esc(cur.join('\\n')+'\\n')+'</span>'); } }
+      for(var i=0;i<lines.length;i++){ var ln=lines[i], f=null; for(var k=0;k<NAMES.length;k++){ if(ln.indexOf(NAMES[k])>=0){f=NAMES[k];break;} } if(f){ flush(); cur=[ln]; owner=f; } else { cur.push(ln); } }
+      flush();
+      document.getElementById('txt').innerHTML=out.join('');
+      var present=[]; for(var k=0;k<NAMES.length;k++){ if(plain.indexOf(NAMES[k])>=0) present.push(NAMES[k]); }
+      try{ window.parent.encReady(present); }catch(e){}
       document.getElementById('gate').style.display='none';
       document.getElementById('content').style.display='block';
     }catch(e){ document.getElementById('err').textContent='密碼錯誤或解密失敗，再試一次'; }
@@ -104,17 +114,28 @@ HTML = """<!DOCTYPE html>
 </body></html>"""
 
 
+def _watch_names():
+    import json
+    try:
+        d = json.load(open(os.path.join(HERE, "watch_list.json"), encoding="utf-8"))
+        return [it["name"] for it in d if it.get("name")]
+    except Exception:
+        return []
+
+
 def build_page(name, run_fn, outfile, pw):
+    import json
     buf = io.StringIO()
     with contextlib.redirect_stdout(buf):
         try:
             run_fn()
         except Exception as e:
             print(f"(產生時出錯：{e})")
-    text = buf.getvalue()
+    text = buf.getvalue().replace('\r', '\n')   # 進度列 \r 正規化，切段才切得對
     salt, iv, ct = encrypt(text, pw)
     html = (HTML.replace("__NAME__", name).replace("__SALT__", salt)
-                .replace("__IV__", iv).replace("__CT__", ct).replace("__ITER__", str(ITER)))
+                .replace("__IV__", iv).replace("__CT__", ct).replace("__ITER__", str(ITER))
+                .replace("__NAMES__", json.dumps(_watch_names(), ensure_ascii=False)))
     with open(os.path.join(HERE, outfile), "w", encoding="utf-8") as f:
         f.write(html)
     print(f"已產生加密 {outfile}（{name}，原文 {len(text)} 字）")

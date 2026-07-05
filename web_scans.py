@@ -125,6 +125,9 @@ SHELL_TPL = """<!DOCTYPE html>
     sel.value=ok?want:'__NONE__';
   }
   function apply(){var v=document.getElementById('stk').value;mem[cur]=v;flt(v);}
+  // 加密頁解密後，內頁呼叫這個把它的股單填進下拉(股名只在解密後才出現，不進公開HTML)
+  function encReady(stocks){ if(stocks&&stocks.length){ TABSTK[cur]=stocks; fillSel(); } }
+  window.encReady=encReady;
   function show(btn,url){var t=document.querySelectorAll('.tab');for(var i=0;i<t.length;i++)t[i].classList.remove('active');btn.classList.add('active');cur=url;place();document.getElementById('fr').src=url+'?v='+VER;}
   function af(){place();fillSel();flt(document.getElementById('stk').value);}
   place();
@@ -211,7 +214,8 @@ def shell():
     # 只有這些頁籤才顯示下拉(有個股可篩)。盤前=國際盤沒個股→不顯示
     watch_tabs = ["radar.html", "diamonds.html", "turning.html", "chips.html", "rotation.html",
                   "cold.html", "panic.html", "secondleg.html"]
-    filterable = json.dumps(watch_tabs + ["cpo.html"])
+    enc_tabs = ["add_zone.html", "support.html", "levels.html"]   # 加密頁：解密後才由 encReady 填股單
+    filterable = json.dumps(watch_tabs + ["cpo.html"] + enc_tabs)
     # 各頁籤的「固定股單」：觀察24檔 / CPO那幾檔。下拉選項用這個，才會完整(不靠內容硬抓)
     watch = load_names()
     try:
@@ -220,6 +224,8 @@ def shell():
         cpo = []
     tabstk = {u: watch for u in watch_tabs}
     tabstk["cpo.html"] = cpo
+    for u in enc_tabs:
+        tabstk[u] = []   # 空的，等解密後前端補
     return (SHELL_TPL.replace("__TABS__", btns)
                      .replace("__VER__", ver)
                      .replace("__FILTER__", filterable)
