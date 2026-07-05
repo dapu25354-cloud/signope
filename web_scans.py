@@ -196,9 +196,9 @@ HOME_TPL = """<!DOCTYPE html>
   .upd{color:#8b949e;font-size:11.5px;margin-bottom:16px}
   .gtitle{font-size:13px;font-weight:700;margin:12px 0 6px;padding-left:2px}
   .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-  .tile{position:relative;background:#141b24;border:1px solid #222b38;border-radius:10px;padding:7px 3px 6px;text-align:center;cursor:pointer;transition:transform .12s,border-color .12s,background .12s;overflow:hidden}
-  .tile:hover,.tile:active{border-color:var(--c);background:#19222f;transform:translateY(-1px)}
-  .tile::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--c);opacity:.85}
+  .tile{position:relative;background:transparent;border:1px solid #2c3644;border-radius:4px;padding:7px 3px 6px;text-align:center;cursor:pointer;transition:border-color .12s,background .12s;overflow:hidden}
+  .tile:hover,.tile:active{border-color:var(--c);background:rgba(255,255,255,.04)}
+  .tile::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--c);opacity:.8}
   .emoji{font-size:18px;line-height:1}
   .tname{font-size:12px;font-weight:700;margin-top:3px}
   .tdesc{font-size:9.5px;color:#8b949e;margin-top:1px}
