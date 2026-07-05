@@ -96,13 +96,15 @@ SHELL_TPL = """<!DOCTYPE html>
 </style></head><body>
   <div class="topbar">
     <div class="tabbar">__TABS__</div>
-    <div class="stkrow"><label>看哪一檔：</label><select id="stk" onchange="af()"><option value="__ALL__">全部</option>__STKOPTS__</select></div>
+    <div class="stkrow"><label>本頁只看：</label><select id="stk" onchange="apply()"><option value="__ALL__">全部</option>__STKOPTS__</select></div>
   </div>
   <iframe id="fr" src="radar.html?v=__VER__" onload="af()"></iframe>
 <script>
-  var VER="__VER__";
-  function show(btn,url){var t=document.querySelectorAll('.tab');for(var i=0;i<t.length;i++)t[i].classList.remove('active');btn.classList.add('active');document.getElementById('fr').src=url+'?v='+VER;}
-  function af(){var v=document.getElementById('stk').value;try{var w=document.getElementById('fr').contentWindow;if(w&&w.filt)w.filt(v);}catch(e){}}
+  var VER="__VER__", mem={}, cur="radar.html";   // mem: 每個頁籤各自記住選的股
+  function flt(v){try{var w=document.getElementById('fr').contentWindow;if(w&&w.filt)w.filt(v);}catch(e){}}
+  function apply(){var v=document.getElementById('stk').value;mem[cur]=v;flt(v);}   // 改下拉→記住+篩選
+  function show(btn,url){var t=document.querySelectorAll('.tab');for(var i=0;i<t.length;i++)t[i].classList.remove('active');btn.classList.add('active');cur=url;document.getElementById('stk').value=mem[url]||'__ALL__';document.getElementById('fr').src=url+'?v='+VER;}
+  function af(){var v=mem[cur]||'__ALL__';document.getElementById('stk').value=v;flt(v);}   // 切頁→還原該頁記憶
 </script>
 </body></html>"""
 
