@@ -97,8 +97,8 @@ SHELL_TPL = """<!DOCTYPE html>
   .tab.active{color:#fff;background:#1f6feb;border-color:#1f6feb}
   .stkrow{display:flex;align-items:center;gap:8px;padding:8px 2px 6px}
   .stkrow label{color:#8b949e;font-size:13px;white-space:nowrap}
-  #stk{appearance:none;-webkit-appearance:none;background:transparent;border:none;color:transparent;cursor:pointer;width:26px;padding:2px;align-self:center;margin-left:2px;flex:0 0 auto;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8"><path d="M0 0l6 8 6-8z" fill="%2358a6ff"/></svg>');background-repeat:no-repeat;background-position:center}
-  #stk option{background:#161b22;color:#e6edf3;font-weight:400}
+  #stk{appearance:none;-webkit-appearance:none;background:transparent;border:none;color:transparent;font-size:0;text-indent:-999px;cursor:pointer;width:28px;height:30px;padding:0;align-self:center;margin-left:2px;flex:0 0 auto;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="13" height="9"><path d="M0 0l6.5 9 6.5-9z" fill="%2358a6ff"/></svg>');background-repeat:no-repeat;background-position:center}
+  #stk option{background:#161b22;color:#e6edf3;font-size:14px;text-indent:0;font-weight:400}
   iframe{flex:1 1 auto;width:100%;border:0;background:#0d1117}
 </style></head><body>
   <div class="topbar">
