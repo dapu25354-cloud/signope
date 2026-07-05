@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-TW"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<title>看盤總表 首頁</title>
+<style>
+  body{margin:0;background:#0d1117;color:#e6edf3;font-family:'Noto Sans TC',sans-serif;padding:16px 14px 40px}
+  h1{font-size:24px;margin:4px 0 2px}
+  .upd{color:#8b949e;font-size:12px;margin-bottom:18px;line-height:1.6}
+  .hgroup{margin-bottom:20px}
+  .gtitle{font-size:15px;font-weight:700;color:#58a6ff;margin:0 0 8px;padding-left:2px}
+  .hitem{display:block;background:#161b22;border:1px solid #212835;border-radius:12px;padding:13px 15px;margin-bottom:9px;cursor:pointer;transition:.12s}
+  .hitem:hover{border-color:#1f6feb;background:#1a2333}
+  .hname{font-size:16px;font-weight:700}
+  .hdesc{font-size:12.5px;color:#8b949e;margin-top:3px;line-height:1.5}
+</style></head><body>
+<div id="pw-gate" style="position:fixed;inset:0;background:#0d1117;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Noto Sans TC',sans-serif;padding:20px">
+  <div style="color:#e6edf3;font-size:20px;margin-bottom:16px">&#128274; 請輸入密碼</div>
+  <div style="position:relative;width:240px">
+    <input id="pw-input" type="password" placeholder="密碼" autocomplete="off" style="padding:12px 44px 12px 16px;font-size:16px;border-radius:10px;border:1px solid #30363d;background:#161b22;color:#e6edf3;width:100%;box-sizing:border-box;text-align:center;outline:none">
+    <span id="pw-eye" title="顯示/隱藏密碼" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:19px;user-select:none">&#128065;</span>
+  </div>
+  <button id="pw-btn" style="margin-top:14px;padding:11px 28px;font-size:15px;border:0;border-radius:10px;background:#2ea043;color:#fff;font-weight:700;cursor:pointer">進入</button>
+  <div id="pw-err" style="color:#f85149;font-size:13px;margin-top:12px;height:16px"></div>
+</div>
+<script>
+(function(){
+  var HASH="1571d02308bd8adf980dc679f575a87cb0d1e2dbaab4cd32b6f6d37085db92bd";
+  var gate=document.getElementById('pw-gate');
+  function unlock(){ gate.style.display='none'; document.body.style.overflow=''; }
+  if(localStorage.getItem('radar_ok')==='1'){ unlock(); }
+  else { document.body.style.overflow='hidden'; }
+  async function check(){
+    var v=document.getElementById('pw-input').value;
+    try{
+      var buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v));
+      var hex=Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+      if(hex===HASH){ localStorage.setItem('radar_ok','1'); unlock(); }
+      else { document.getElementById('pw-err').textContent='密碼錯誤，再試一次'; }
+    }catch(e){ document.getElementById('pw-err').textContent='此瀏覽器不支援，請用 Chrome/Safari'; }
+  }
+  document.getElementById('pw-btn').onclick=check;
+  document.getElementById('pw-input').addEventListener('keydown', function(e){ if(e.key==='Enter') check(); });
+  var inp=document.getElementById('pw-input'), eye=document.getElementById('pw-eye');
+  eye.onclick=function(){
+    if(inp.type==='password'){ inp.type='text'; eye.innerHTML='&#128584;'; }
+    else { inp.type='password'; eye.innerHTML='&#128065;'; }
+    inp.focus();
+  };
+})();
+</script>
+
+  <h1>📊 看盤總表</h1>
+  <div class="upd">更新：2026-07-05 11:00（台灣時間）<br>點下面工具進入，或用最上面那排頁籤切換</div>
+  <div class="hgroup"><div class="gtitle">📊 每日盯盤</div><div class="hitem" onclick="parent.goTab('radar.html')"><div class="hname">庫存股雷達</div><div class="hdesc">每檔短線強弱＋體質(真鑽石/石頭)</div></div><div class="hitem" onclick="parent.goTab('add_zone.html')"><div class="hname">🔒 加碼區</div><div class="hdesc">拉回到哪可以加碼(私人，需密碼)</div></div><div class="hitem" onclick="parent.goTab('premarket.html')"><div class="hname">盤前國際盤</div><div class="hdesc">昨夜美股/油價 → 台股開盤偏多或偏空</div></div><div class="hitem" onclick="parent.goTab('chips.html')"><div class="hname">法人籌碼</div><div class="hdesc">外資/投信買賣超</div></div><div class="hitem" onclick="parent.goTab('rotation.html')"><div class="hname">輪動雷達</div><div class="hdesc">類股分組強弱、看資金輪動</div></div><div class="hitem" onclick="parent.goTab('cpo.html')"><div class="hname">CPO觀察</div><div class="hdesc">矽光子觀察股(華星光/上詮/日月光)</div></div></div><div class="hgroup"><div class="gtitle">⚔️ 獵殺掃描</div><div class="hitem" onclick="parent.goTab('diamonds.html')"><div class="hname">真鑽石篩選</div><div class="hdesc">分真鑽石／鍍金／石頭，別買錯</div></div><div class="hitem" onclick="parent.goTab('turning.html')"><div class="hname">轉折燈</div><div class="hdesc">五關轉折：該上車還是下車</div></div><div class="hitem" onclick="parent.goTab('cold.html')"><div class="hname">冷血獵殺</div><div class="hdesc">抄超賣的強勢股</div></div><div class="hitem" onclick="parent.goTab('panic.html')"><div class="hname">恐慌接刀</div><div class="hdesc">崩盤時接被錯殺的好股</div></div><div class="hitem" onclick="parent.goTab('secondleg.html')"><div class="hname">第二腳</div><div class="hdesc">回測前低、站得住的接點</div></div></div><div class="hgroup"><div class="gtitle">🔒 私人(需密碼 yushu178861)</div><div class="hitem" onclick="parent.goTab('support.html')"><div class="hname">守線小幫手</div><div class="hdesc">各檔防守線＋策略</div></div><div class="hitem" onclick="parent.goTab('levels.html')"><div class="hname">關卡小工具</div><div class="hdesc">你的成本＋操作關卡</div></div></div>
+</body></html>

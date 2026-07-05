@@ -105,9 +105,9 @@ SHELL_TPL = """<!DOCTYPE html>
   <div class="topbar">
     <div class="tabbar" id="tabbar">__TABS__<select id="stk" onchange="apply()" title="選一檔只看它" style="display:none"><option value="__NONE__">選股票…</option></select></div>
   </div>
-  <iframe id="fr" src="radar.html?v=__VER__" onload="af()"></iframe>
+  <iframe id="fr" src="home.html?v=__VER__" onload="af()"></iframe>
 <script>
-  var VER="__VER__", mem={}, cur="radar.html", FILTER=__FILTER__, TABSTK=__TABSTK__;   // TABSTK:各頁籤固定股單
+  var VER="__VER__", mem={}, cur="home.html", FILTER=__FILTER__, TABSTK=__TABSTK__;   // TABSTK:各頁籤固定股單
   // 把下拉▼移到「當前頁籤」右邊；非篩選頁(盤前等)則隱藏
   function place(){
     var sel=document.getElementById('stk'), act=document.querySelector('.tab.active');
@@ -128,6 +128,9 @@ SHELL_TPL = """<!DOCTYPE html>
   // 加密頁解密後，內頁呼叫這個把它的股單填進下拉(股名只在解密後才出現，不進公開HTML)
   function encReady(stocks){ if(stocks&&stocks.length){ TABSTK[cur]=stocks; fillSel(); } }
   window.encReady=encReady;
+  // 首頁點工具→切到那個頁籤
+  function goTab(url){var t=document.querySelectorAll('.tab');for(var i=0;i<t.length;i++){var oc=t[i].getAttribute('onclick');if(oc&&oc.indexOf("'"+url+"'")>=0){show(t[i],url);return;}}}
+  window.goTab=goTab;
   function show(btn,url){var t=document.querySelectorAll('.tab');for(var i=0;i<t.length;i++)t[i].classList.remove('active');btn.classList.add('active');cur=url;place();document.getElementById('fr').src=url+'?v='+VER;}
   function af(){place();fillSel();flt(document.getElementById('stk').value);}
   place();
@@ -135,6 +138,7 @@ SHELL_TPL = """<!DOCTYPE html>
 </body></html>"""
 
 TABS = [
+    ("🏠 首頁", "home.html"),
     ("庫存股雷達", "radar.html"),
     ("加碼區", "add_zone.html"),
     ("真鑽石篩選", "diamonds.html"),
@@ -162,6 +166,62 @@ TEXT_TOOLS = [
     ("🌋 恐慌接刀", "panic.html", lambda: panic_bottom_hunter.run_panic_scan()),
     ("🐺 第二腳獵殺", "secondleg.html", lambda: second_leg_hunter.run_hunter()),
 ]
+
+# 首頁的工具選單(分組)：(檔案, 顯示名, 一句說明)
+HOME_GROUPS = [
+    ("📊 每日盯盤", [
+        ("radar.html", "庫存股雷達", "每檔短線強弱＋體質(真鑽石/石頭)"),
+        ("add_zone.html", "🔒 加碼區", "拉回到哪可以加碼(私人，需密碼)"),
+        ("premarket.html", "盤前國際盤", "昨夜美股/油價 → 台股開盤偏多或偏空"),
+        ("chips.html", "法人籌碼", "外資/投信買賣超"),
+        ("rotation.html", "輪動雷達", "類股分組強弱、看資金輪動"),
+        ("cpo.html", "CPO觀察", "矽光子觀察股(華星光/上詮/日月光)"),
+    ]),
+    ("⚔️ 獵殺掃描", [
+        ("diamonds.html", "真鑽石篩選", "分真鑽石／鍍金／石頭，別買錯"),
+        ("turning.html", "轉折燈", "五關轉折：該上車還是下車"),
+        ("cold.html", "冷血獵殺", "抄超賣的強勢股"),
+        ("panic.html", "恐慌接刀", "崩盤時接被錯殺的好股"),
+        ("secondleg.html", "第二腳", "回測前低、站得住的接點"),
+    ]),
+    ("🔒 私人(需密碼 yushu178861)", [
+        ("support.html", "守線小幫手", "各檔防守線＋策略"),
+        ("levels.html", "關卡小工具", "你的成本＋操作關卡"),
+    ]),
+]
+
+HOME_TPL = """<!DOCTYPE html>
+<html lang="zh-TW"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<title>看盤總表 首頁</title>
+<style>
+  body{margin:0;background:#0d1117;color:#e6edf3;font-family:'Noto Sans TC',sans-serif;padding:16px 14px 40px}
+  h1{font-size:24px;margin:4px 0 2px}
+  .upd{color:#8b949e;font-size:12px;margin-bottom:18px;line-height:1.6}
+  .hgroup{margin-bottom:20px}
+  .gtitle{font-size:15px;font-weight:700;color:#58a6ff;margin:0 0 8px;padding-left:2px}
+  .hitem{display:block;background:#161b22;border:1px solid #212835;border-radius:12px;padding:13px 15px;margin-bottom:9px;cursor:pointer;transition:.12s}
+  .hitem:hover{border-color:#1f6feb;background:#1a2333}
+  .hname{font-size:16px;font-weight:700}
+  .hdesc{font-size:12.5px;color:#8b949e;margin-top:3px;line-height:1.5}
+</style></head><body>
+  <h1>📊 看盤總表</h1>
+  <div class="upd">更新：__UPD__（台灣時間）<br>點下面工具進入，或用最上面那排頁籤切換</div>
+  __CARDS__
+</body></html>"""
+
+
+def home_page(upd):
+    cards = ""
+    for gtitle, items in HOME_GROUPS:
+        rows = ""
+        for url, nm, desc in items:
+            rows += (f'<div class="hitem" onclick="parent.goTab(\'{url}\')">'
+                     f'<div class="hname">{esc(nm)}</div><div class="hdesc">{esc(desc)}</div></div>')
+        cards += f'<div class="hgroup"><div class="gtitle">{esc(gtitle)}</div>{rows}</div>'
+    return lock_inject(HOME_TPL.replace("__UPD__", upd).replace("__CARDS__", cards))
 
 
 def load_names():
@@ -252,9 +312,11 @@ def main():
             tries += 1
         with open(os.path.join(HERE, fname), "w", encoding="utf-8") as f:
             f.write(text_page(title, txt, upd, names))
+    with open(os.path.join(HERE, "home.html"), "w", encoding="utf-8") as f:
+        f.write(home_page(upd))
     with open(os.path.join(HERE, "index.html"), "w", encoding="utf-8") as f:
         f.write(shell())
-    print("已產生所有工具頁 + index.html(頁籤外框)")
+    print("已產生所有工具頁 + home.html + index.html(頁籤外框)")
 
 
 if __name__ == "__main__":
