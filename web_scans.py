@@ -103,16 +103,36 @@ SHELL_TPL = """<!DOCTYPE html>
 </style></head><body>
   <div class="topbar">
     <div class="tabbar">__TABS__</div>
-    <div class="stkrow" id="stkrow"><label>本頁只看：</label><select id="stk" onchange="apply()"><option value="__ALL__">全部</option>__STKOPTS__</select></div>
+    <div class="stkrow" id="stkrow"><label>本頁只看：</label><select id="stk" onchange="apply()"><option value="__ALL__">全部</option></select></div>
   </div>
   <iframe id="fr" src="radar.html?v=__VER__" onload="af()"></iframe>
 <script>
   var VER="__VER__", mem={}, cur="radar.html", FILTER=__FILTER__;   // mem:每頁記住選的股; FILTER:哪些頁籤才顯示下拉
   function toggleSel(){document.getElementById('stkrow').style.display=(FILTER.indexOf(cur)>=0)?'flex':'none';}
   function flt(v){try{var w=document.getElementById('fr').contentWindow;if(w&&w.filt)w.filt(v);}catch(e){}}
+  // 抓「當前頁」實際有的股票(文字頁看 data-stk、雷達卡片看 data-name)，下拉選項就用這些
+  function tabStocks(){
+    var set={}, out=[];
+    try{
+      var doc=document.getElementById('fr').contentWindow.document;
+      var els=doc.querySelectorAll('[data-stk]');
+      for(var i=0;i<els.length;i++){var s=els[i].getAttribute('data-stk');if(s&&s!=='__hdr__'&&!set[s]){set[s]=1;out.push(s);}}
+      if(out.length===0){var cs=doc.querySelectorAll('[data-name]');for(var j=0;j<cs.length;j++){var n=cs[j].getAttribute('data-name');if(n&&!set[n]){set[n]=1;out.push(n);}}}
+    }catch(e){}
+    return out;
+  }
+  function fillSel(){
+    var stocks=tabStocks(), sel=document.getElementById('stk');
+    var html='<option value="__ALL__">全部</option>';
+    for(var i=0;i<stocks.length;i++){html+='<option value="'+stocks[i]+'">'+stocks[i]+'</option>';}
+    sel.innerHTML=html;
+    var want=mem[cur]||'__ALL__', ok=false;
+    for(var k=0;k<sel.options.length;k++){if(sel.options[k].value===want){ok=true;break;}}
+    sel.value=ok?want:'__ALL__';
+  }
   function apply(){var v=document.getElementById('stk').value;mem[cur]=v;flt(v);}
-  function show(btn,url){var t=document.querySelectorAll('.tab');for(var i=0;i<t.length;i++)t[i].classList.remove('active');btn.classList.add('active');cur=url;toggleSel();document.getElementById('stk').value=mem[url]||'__ALL__';document.getElementById('fr').src=url+'?v='+VER;}
-  function af(){var v=mem[cur]||'__ALL__';document.getElementById('stk').value=v;flt(v);}
+  function show(btn,url){var t=document.querySelectorAll('.tab');for(var i=0;i<t.length;i++)t[i].classList.remove('active');btn.classList.add('active');cur=url;toggleSel();document.getElementById('fr').src=url+'?v='+VER;}
+  function af(){toggleSel();fillSel();flt(document.getElementById('stk').value);}
   toggleSel();
 </script>
 </body></html>"""
@@ -192,14 +212,12 @@ def shell():
     for i, (name, url) in enumerate(TABS):
         cls = "tab active" if i == 0 else "tab"
         btns += f'<button class="{cls}" onclick="show(this,\'{url}\')">{name}</button>'
-    opts = "".join('<option value="%s">%s</option>' % (esc(n), esc(n)) for n in load_names())
     ver = datetime.now(TW).strftime('%Y%m%d%H%M')  # 版本記號=防快取，每次更新換一個號
     import json
-    # 只有這些頁籤才顯示下拉(有個股可篩)。盤前=國際盤沒個股、雷達/加碼區/關卡尚未接下拉→不顯示
+    # 只有這些頁籤才顯示下拉(有個股可篩)。盤前=國際盤沒個股→不顯示。下拉選項在前端依當前頁自動抓
     filterable = json.dumps(["radar.html", "diamonds.html", "turning.html", "chips.html", "rotation.html",
                              "cpo.html", "cold.html", "panic.html", "secondleg.html"])
     return (SHELL_TPL.replace("__TABS__", btns)
-                     .replace("__STKOPTS__", opts)
                      .replace("__VER__", ver)
                      .replace("__FILTER__", filterable))
 
@@ -207,6 +225,11 @@ def shell():
 def main():
     upd = now_str()
     names = load_names()
+    # CPO 的股(華星光/上詮/日月光投控…)不在觀察名單裡，補進來才切得出段、下拉才列得對
+    try:
+        names = names + [nm for (_c, nm, _r) in cpo_watch.WATCH if nm not in names]
+    except Exception:
+        pass
     for title, fname, fn in TEXT_TOOLS:
         print(f"產生 {title} 頁…")
         txt = capture(fn)

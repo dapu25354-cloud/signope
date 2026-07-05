@@ -21,16 +21,36 @@
 </style></head><body>
   <div class="topbar">
     <div class="tabbar"><button class="tab active" onclick="show(this,'radar.html')">庫存股雷達</button><button class="tab" onclick="show(this,'add_zone.html')">加碼區</button><button class="tab" onclick="show(this,'diamonds.html')">真鑽石篩選</button><button class="tab" onclick="show(this,'turning.html')">轉折燈</button><button class="tab" onclick="show(this,'premarket.html')">盤前國際盤</button><button class="tab" onclick="show(this,'chips.html')">法人籌碼</button><button class="tab" onclick="show(this,'rotation.html')">輪動雷達</button><button class="tab" onclick="show(this,'cpo.html')">CPO觀察</button><button class="tab" onclick="show(this,'cold.html')">冷血獵殺</button><button class="tab" onclick="show(this,'panic.html')">恐慌接刀</button><button class="tab" onclick="show(this,'secondleg.html')">第二腳</button><button class="tab" onclick="show(this,'support.html')">🛡️守線</button><button class="tab" onclick="show(this,'levels.html')">🔒關卡</button></div>
-    <div class="stkrow" id="stkrow"><label>本頁只看：</label><select id="stk" onchange="apply()"><option value="__ALL__">全部</option><option value="是方">是方</option><option value="銳澤">銳澤</option><option value="智伸科">智伸科</option><option value="均華">均華</option><option value="緯創">緯創</option><option value="世界">世界</option><option value="緯穎">緯穎</option><option value="台積電">台積電</option><option value="中信金">中信金</option><option value="國票金">國票金</option><option value="大立光">大立光</option><option value="台達電">台達電</option><option value="元大金">元大金</option><option value="長榮航">長榮航</option><option value="鑽全">鑽全</option><option value="中鋼">中鋼</option><option value="順達">順達</option><option value="研華">研華</option><option value="世禾">世禾</option><option value="汎銓">汎銓</option><option value="台新金">台新金</option><option value="統一實">統一實</option><option value="寶成">寶成</option><option value="先進光">先進光</option></select></div>
+    <div class="stkrow" id="stkrow"><label>本頁只看：</label><select id="stk" onchange="apply()"><option value="__ALL__">全部</option></select></div>
   </div>
-  <iframe id="fr" src="radar.html?v=202607050950" onload="af()"></iframe>
+  <iframe id="fr" src="radar.html?v=202607051000" onload="af()"></iframe>
 <script>
-  var VER="202607050950", mem={}, cur="radar.html", FILTER=["radar.html", "diamonds.html", "turning.html", "chips.html", "rotation.html", "cpo.html", "cold.html", "panic.html", "secondleg.html"];   // mem:每頁記住選的股; FILTER:哪些頁籤才顯示下拉
+  var VER="202607051000", mem={}, cur="radar.html", FILTER=["radar.html", "diamonds.html", "turning.html", "chips.html", "rotation.html", "cpo.html", "cold.html", "panic.html", "secondleg.html"];   // mem:每頁記住選的股; FILTER:哪些頁籤才顯示下拉
   function toggleSel(){document.getElementById('stkrow').style.display=(FILTER.indexOf(cur)>=0)?'flex':'none';}
   function flt(v){try{var w=document.getElementById('fr').contentWindow;if(w&&w.filt)w.filt(v);}catch(e){}}
+  // 抓「當前頁」實際有的股票(文字頁看 data-stk、雷達卡片看 data-name)，下拉選項就用這些
+  function tabStocks(){
+    var set={}, out=[];
+    try{
+      var doc=document.getElementById('fr').contentWindow.document;
+      var els=doc.querySelectorAll('[data-stk]');
+      for(var i=0;i<els.length;i++){var s=els[i].getAttribute('data-stk');if(s&&s!=='__hdr__'&&!set[s]){set[s]=1;out.push(s);}}
+      if(out.length===0){var cs=doc.querySelectorAll('[data-name]');for(var j=0;j<cs.length;j++){var n=cs[j].getAttribute('data-name');if(n&&!set[n]){set[n]=1;out.push(n);}}}
+    }catch(e){}
+    return out;
+  }
+  function fillSel(){
+    var stocks=tabStocks(), sel=document.getElementById('stk');
+    var html='<option value="__ALL__">全部</option>';
+    for(var i=0;i<stocks.length;i++){html+='<option value="'+stocks[i]+'">'+stocks[i]+'</option>';}
+    sel.innerHTML=html;
+    var want=mem[cur]||'__ALL__', ok=false;
+    for(var k=0;k<sel.options.length;k++){if(sel.options[k].value===want){ok=true;break;}}
+    sel.value=ok?want:'__ALL__';
+  }
   function apply(){var v=document.getElementById('stk').value;mem[cur]=v;flt(v);}
-  function show(btn,url){var t=document.querySelectorAll('.tab');for(var i=0;i<t.length;i++)t[i].classList.remove('active');btn.classList.add('active');cur=url;toggleSel();document.getElementById('stk').value=mem[url]||'__ALL__';document.getElementById('fr').src=url+'?v='+VER;}
-  function af(){var v=mem[cur]||'__ALL__';document.getElementById('stk').value=v;flt(v);}
+  function show(btn,url){var t=document.querySelectorAll('.tab');for(var i=0;i<t.length;i++)t[i].classList.remove('active');btn.classList.add('active');cur=url;toggleSel();document.getElementById('fr').src=url+'?v='+VER;}
+  function af(){toggleSel();fillSel();flt(document.getElementById('stk').value);}
   toggleSel();
 </script>
 </body></html>
