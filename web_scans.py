@@ -204,7 +204,7 @@ HOME_TPL = """<!DOCTYPE html>
   .tdesc{font-size:9.5px;color:#8b949e;margin-top:1px}
 </style></head><body>
   <h1>📊 看盤總表</h1>
-  <div class="upd">更新 __UPD__ · 點方塊進入，或用上面頁籤切換</div>
+  <div class="upd">更新 __UPD__ · 點方塊進入工具，工具頁左上角「🏠首頁」可回來</div>
   __CARDS__
 </body></html>"""
 
