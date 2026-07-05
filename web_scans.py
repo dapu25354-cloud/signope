@@ -91,29 +91,23 @@ SHELL_TPL = """<!DOCTYPE html>
 <style>
   html,body{margin:0;height:100%;background:#0d1117;font-family:'Noto Sans TC',sans-serif}
   body{display:flex;flex-direction:column}
-  .topbar{flex:0 0 auto;background:#0d1117;border-bottom:1px solid #212835;padding:8px 8px 0}
-  .tabbar{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .tab{flex:0 0 auto;padding:10px 16px;font-size:15px;font-weight:700;color:#8b949e;background:#161b22;border:1px solid #212835;border-bottom:none;border-radius:10px 10px 0 0;cursor:pointer;white-space:nowrap}
-  .tab:hover{text-decoration:underline;color:#e6edf3}
-  .tab.active{color:#fff;background:#1f6feb;border-color:#1f6feb}
-  .stkrow{display:flex;align-items:center;gap:8px;padding:8px 2px 6px}
-  .stkrow label{color:#8b949e;font-size:13px;white-space:nowrap}
-  #stk{appearance:none;-webkit-appearance:none;background:transparent;border:none;color:transparent;font-size:0;text-indent:-999px;cursor:pointer;width:28px;height:30px;padding:0;align-self:center;margin-left:2px;flex:0 0 auto;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="13" height="9"><path d="M0 0l6.5 9 6.5-9z" fill="%2358a6ff"/></svg>');background-repeat:no-repeat;background-position:center}
+  .topbar{flex:0 0 auto;display:flex;align-items:center;gap:12px;background:#0d1117;border-bottom:1px solid #212835;padding:10px 14px}
+  .homebtn{color:#58a6ff;font-weight:700;font-size:15px;cursor:pointer;white-space:nowrap}
+  .homebtn:hover{text-decoration:underline}
+  #curtitle{font-weight:700;font-size:16px;color:#e6edf3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #stk{appearance:none;-webkit-appearance:none;background:transparent;border:none;color:transparent;font-size:0;text-indent:-999px;cursor:pointer;width:30px;height:30px;padding:0;margin-left:auto;flex:0 0 auto;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="13" height="9"><path d="M0 0l6.5 9 6.5-9z" fill="%2358a6ff"/></svg>');background-repeat:no-repeat;background-position:center}
   #stk option{background:#161b22;color:#e6edf3;font-size:14px;text-indent:0;font-weight:400}
   iframe{flex:1 1 auto;width:100%;border:0;background:#0d1117}
 </style></head><body>
-  <div class="topbar">
-    <div class="tabbar" id="tabbar">__TABS__<select id="stk" onchange="apply()" title="選一檔只看它" style="display:none"><option value="__NONE__">選股票…</option></select></div>
+  <div class="topbar" id="topbar" style="display:none">
+    <span class="homebtn" onclick="goHome()">🏠 首頁</span>
+    <span id="curtitle"></span>
+    <select id="stk" onchange="apply()" title="選一檔只看它" style="display:none"><option value="__NONE__">選股票…</option></select>
   </div>
   <iframe id="fr" src="home.html?v=__VER__" onload="af()"></iframe>
 <script>
-  var VER="__VER__", mem={}, cur="home.html", FILTER=__FILTER__, TABSTK=__TABSTK__;   // TABSTK:各頁籤固定股單
-  // 把下拉▼移到「當前頁籤」右邊；非篩選頁(盤前等)則隱藏
-  function place(){
-    var sel=document.getElementById('stk'), act=document.querySelector('.tab.active');
-    if(act && FILTER.indexOf(cur)>=0){ act.parentNode.insertBefore(sel, act.nextSibling); sel.style.display=''; }
-    else { sel.style.display='none'; }
-  }
+  var VER="__VER__", mem={}, cur="home.html", FILTER=__FILTER__, TABSTK=__TABSTK__, TNAME=__TNAME__;
+  function selVis(){ document.getElementById('stk').style.display=(FILTER.indexOf(cur)>=0)?'':'none'; }
   function flt(v){try{var w=document.getElementById('fr').contentWindow;if(w&&w.filt)w.filt(v);}catch(e){}}
   function fillSel(){
     var stocks=TABSTK[cur]||[], sel=document.getElementById('stk');
@@ -128,12 +122,12 @@ SHELL_TPL = """<!DOCTYPE html>
   // 加密頁解密後，內頁呼叫這個把它的股單填進下拉(股名只在解密後才出現，不進公開HTML)
   function encReady(stocks){ if(stocks&&stocks.length){ TABSTK[cur]=stocks; fillSel(); } }
   window.encReady=encReady;
-  // 首頁點工具→切到那個頁籤
-  function goTab(url){var t=document.querySelectorAll('.tab');for(var i=0;i<t.length;i++){var oc=t[i].getAttribute('onclick');if(oc&&oc.indexOf("'"+url+"'")>=0){show(t[i],url);return;}}}
+  function goHome(){ cur="home.html"; document.getElementById('topbar').style.display='none'; document.getElementById('fr').src="home.html?v="+VER; }
+  window.goHome=goHome;
+  // 首頁點方塊→進工具(頁籤隱藏，上面只留 🏠首頁 返回 + 該篩的▼)
+  function goTab(url){ cur=url; document.getElementById('curtitle').textContent=TNAME[url]||''; document.getElementById('topbar').style.display='flex'; selVis(); document.getElementById('fr').src=url+'?v='+VER; }
   window.goTab=goTab;
-  function show(btn,url){var t=document.querySelectorAll('.tab');for(var i=0;i<t.length;i++)t[i].classList.remove('active');btn.classList.add('active');cur=url;place();document.getElementById('fr').src=url+'?v='+VER;}
-  function af(){place();fillSel();flt(document.getElementById('stk').value);}
-  place();
+  function af(){ if(cur==='home.html'){ document.getElementById('topbar').style.display='none'; return; } selVis(); fillSel(); flt(document.getElementById('stk').value); }
 </script>
 </body></html>"""
 
@@ -269,10 +263,6 @@ def text_page(title, body_text, upd, names):
 
 
 def shell():
-    btns = ""
-    for i, (name, url) in enumerate(TABS):
-        cls = "tab active" if i == 0 else "tab"
-        btns += f'<button class="{cls}" onclick="show(this,\'{url}\')">{name}</button>'
     ver = datetime.now(TW).strftime('%Y%m%d%H%M')  # 版本記號=防快取，每次更新換一個號
     import json
     # 只有這些頁籤才顯示下拉(有個股可篩)。盤前=國際盤沒個股→不顯示
@@ -290,10 +280,11 @@ def shell():
     tabstk["cpo.html"] = cpo
     for u in enc_tabs:
         tabstk[u] = []   # 空的，等解密後前端補
-    return (SHELL_TPL.replace("__TABS__", btns)
-                     .replace("__VER__", ver)
+    tname = {url: name for (name, url) in TABS if url != "home.html"}   # 工具頁上方顯示的標題
+    return (SHELL_TPL.replace("__VER__", ver)
                      .replace("__FILTER__", filterable)
-                     .replace("__TABSTK__", json.dumps(tabstk, ensure_ascii=False)))
+                     .replace("__TABSTK__", json.dumps(tabstk, ensure_ascii=False))
+                     .replace("__TNAME__", json.dumps(tname, ensure_ascii=False)))
 
 
 def main():

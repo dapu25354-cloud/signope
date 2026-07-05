@@ -7,29 +7,23 @@
 <style>
   html,body{margin:0;height:100%;background:#0d1117;font-family:'Noto Sans TC',sans-serif}
   body{display:flex;flex-direction:column}
-  .topbar{flex:0 0 auto;background:#0d1117;border-bottom:1px solid #212835;padding:8px 8px 0}
-  .tabbar{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .tab{flex:0 0 auto;padding:10px 16px;font-size:15px;font-weight:700;color:#8b949e;background:#161b22;border:1px solid #212835;border-bottom:none;border-radius:10px 10px 0 0;cursor:pointer;white-space:nowrap}
-  .tab:hover{text-decoration:underline;color:#e6edf3}
-  .tab.active{color:#fff;background:#1f6feb;border-color:#1f6feb}
-  .stkrow{display:flex;align-items:center;gap:8px;padding:8px 2px 6px}
-  .stkrow label{color:#8b949e;font-size:13px;white-space:nowrap}
-  #stk{appearance:none;-webkit-appearance:none;background:transparent;border:none;color:transparent;font-size:0;text-indent:-999px;cursor:pointer;width:28px;height:30px;padding:0;align-self:center;margin-left:2px;flex:0 0 auto;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="13" height="9"><path d="M0 0l6.5 9 6.5-9z" fill="%2358a6ff"/></svg>');background-repeat:no-repeat;background-position:center}
+  .topbar{flex:0 0 auto;display:flex;align-items:center;gap:12px;background:#0d1117;border-bottom:1px solid #212835;padding:10px 14px}
+  .homebtn{color:#58a6ff;font-weight:700;font-size:15px;cursor:pointer;white-space:nowrap}
+  .homebtn:hover{text-decoration:underline}
+  #curtitle{font-weight:700;font-size:16px;color:#e6edf3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #stk{appearance:none;-webkit-appearance:none;background:transparent;border:none;color:transparent;font-size:0;text-indent:-999px;cursor:pointer;width:30px;height:30px;padding:0;margin-left:auto;flex:0 0 auto;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="13" height="9"><path d="M0 0l6.5 9 6.5-9z" fill="%2358a6ff"/></svg>');background-repeat:no-repeat;background-position:center}
   #stk option{background:#161b22;color:#e6edf3;font-size:14px;text-indent:0;font-weight:400}
   iframe{flex:1 1 auto;width:100%;border:0;background:#0d1117}
 </style></head><body>
-  <div class="topbar">
-    <div class="tabbar" id="tabbar"><button class="tab active" onclick="show(this,'home.html')">🏠 首頁</button><button class="tab" onclick="show(this,'radar.html')">庫存股雷達</button><button class="tab" onclick="show(this,'add_zone.html')">加碼區</button><button class="tab" onclick="show(this,'diamonds.html')">真鑽石篩選</button><button class="tab" onclick="show(this,'turning.html')">轉折燈</button><button class="tab" onclick="show(this,'premarket.html')">盤前國際盤</button><button class="tab" onclick="show(this,'chips.html')">法人籌碼</button><button class="tab" onclick="show(this,'rotation.html')">輪動雷達</button><button class="tab" onclick="show(this,'cpo.html')">CPO觀察</button><button class="tab" onclick="show(this,'cold.html')">冷血獵殺</button><button class="tab" onclick="show(this,'panic.html')">恐慌接刀</button><button class="tab" onclick="show(this,'secondleg.html')">第二腳</button><button class="tab" onclick="show(this,'support.html')">🛡️守線</button><button class="tab" onclick="show(this,'levels.html')">🔒關卡</button><select id="stk" onchange="apply()" title="選一檔只看它" style="display:none"><option value="__NONE__">選股票…</option></select></div>
+  <div class="topbar" id="topbar" style="display:none">
+    <span class="homebtn" onclick="goHome()">🏠 首頁</span>
+    <span id="curtitle"></span>
+    <select id="stk" onchange="apply()" title="選一檔只看它" style="display:none"><option value="__NONE__">選股票…</option></select>
   </div>
-  <iframe id="fr" src="home.html?v=202607051114" onload="af()"></iframe>
+  <iframe id="fr" src="home.html?v=202607051119" onload="af()"></iframe>
 <script>
-  var VER="202607051114", mem={}, cur="home.html", FILTER=["radar.html", "diamonds.html", "turning.html", "chips.html", "rotation.html", "cold.html", "panic.html", "secondleg.html", "cpo.html", "add_zone.html", "support.html", "levels.html"], TABSTK={"radar.html": ["是方", "銳澤", "智伸科", "均華", "緯創", "世界", "緯穎", "台積電", "中信金", "國票金", "大立光", "台達電", "元大金", "長榮航", "鑽全", "中鋼", "順達", "研華", "世禾", "汎銓", "台新金", "統一實", "寶成", "先進光"], "diamonds.html": ["是方", "銳澤", "智伸科", "均華", "緯創", "世界", "緯穎", "台積電", "中信金", "國票金", "大立光", "台達電", "元大金", "長榮航", "鑽全", "中鋼", "順達", "研華", "世禾", "汎銓", "台新金", "統一實", "寶成", "先進光"], "turning.html": ["是方", "銳澤", "智伸科", "均華", "緯創", "世界", "緯穎", "台積電", "中信金", "國票金", "大立光", "台達電", "元大金", "長榮航", "鑽全", "中鋼", "順達", "研華", "世禾", "汎銓", "台新金", "統一實", "寶成", "先進光"], "chips.html": ["是方", "銳澤", "智伸科", "均華", "緯創", "世界", "緯穎", "台積電", "中信金", "國票金", "大立光", "台達電", "元大金", "長榮航", "鑽全", "中鋼", "順達", "研華", "世禾", "汎銓", "台新金", "統一實", "寶成", "先進光"], "rotation.html": ["是方", "銳澤", "智伸科", "均華", "緯創", "世界", "緯穎", "台積電", "中信金", "國票金", "大立光", "台達電", "元大金", "長榮航", "鑽全", "中鋼", "順達", "研華", "世禾", "汎銓", "台新金", "統一實", "寶成", "先進光"], "cold.html": ["是方", "銳澤", "智伸科", "均華", "緯創", "世界", "緯穎", "台積電", "中信金", "國票金", "大立光", "台達電", "元大金", "長榮航", "鑽全", "中鋼", "順達", "研華", "世禾", "汎銓", "台新金", "統一實", "寶成", "先進光"], "panic.html": ["是方", "銳澤", "智伸科", "均華", "緯創", "世界", "緯穎", "台積電", "中信金", "國票金", "大立光", "台達電", "元大金", "長榮航", "鑽全", "中鋼", "順達", "研華", "世禾", "汎銓", "台新金", "統一實", "寶成", "先進光"], "secondleg.html": ["是方", "銳澤", "智伸科", "均華", "緯創", "世界", "緯穎", "台積電", "中信金", "國票金", "大立光", "台達電", "元大金", "長榮航", "鑽全", "中鋼", "順達", "研華", "世禾", "汎銓", "台新金", "統一實", "寶成", "先進光"], "cpo.html": ["華星光", "上詮", "日月光投控"], "add_zone.html": [], "support.html": [], "levels.html": []};   // TABSTK:各頁籤固定股單
-  // 把下拉▼移到「當前頁籤」右邊；非篩選頁(盤前等)則隱藏
-  function place(){
-    var sel=document.getElementById('stk'), act=document.querySelector('.tab.active');
-    if(act && FILTER.indexOf(cur)>=0){ act.parentNode.insertBefore(sel, act.nextSibling); sel.style.display=''; }
-    else { sel.style.display='none'; }
-  }
+  var VER="202607051119", mem={}, cur="home.html", FILTER=["radar.html", "diamonds.html", "turning.html", "chips.html", "rotation.html", "cold.html", "panic.html", "secondleg.html", "cpo.html", "add_zone.html", "support.html", "levels.html"], TABSTK={"radar.html": ["是方", "銳澤", "智伸科", "均華", "緯創", "世界", "緯穎", "台積電", "中信金", "國票金", "大立光", "台達電", "元大金", "長榮航", "鑽全", "中鋼", "順達", "研華", "世禾", "汎銓", "台新金", "統一實", "寶成", "先進光"], "diamonds.html": ["是方", "銳澤", "智伸科", "均華", "緯創", "世界", "緯穎", "台積電", "中信金", "國票金", "大立光", "台達電", "元大金", "長榮航", "鑽全", "中鋼", "順達", "研華", "世禾", "汎銓", "台新金", "統一實", "寶成", "先進光"], "turning.html": ["是方", "銳澤", "智伸科", "均華", "緯創", "世界", "緯穎", "台積電", "中信金", "國票金", "大立光", "台達電", "元大金", "長榮航", "鑽全", "中鋼", "順達", "研華", "世禾", "汎銓", "台新金", "統一實", "寶成", "先進光"], "chips.html": ["是方", "銳澤", "智伸科", "均華", "緯創", "世界", "緯穎", "台積電", "中信金", "國票金", "大立光", "台達電", "元大金", "長榮航", "鑽全", "中鋼", "順達", "研華", "世禾", "汎銓", "台新金", "統一實", "寶成", "先進光"], "rotation.html": ["是方", "銳澤", "智伸科", "均華", "緯創", "世界", "緯穎", "台積電", "中信金", "國票金", "大立光", "台達電", "元大金", "長榮航", "鑽全", "中鋼", "順達", "研華", "世禾", "汎銓", "台新金", "統一實", "寶成", "先進光"], "cold.html": ["是方", "銳澤", "智伸科", "均華", "緯創", "世界", "緯穎", "台積電", "中信金", "國票金", "大立光", "台達電", "元大金", "長榮航", "鑽全", "中鋼", "順達", "研華", "世禾", "汎銓", "台新金", "統一實", "寶成", "先進光"], "panic.html": ["是方", "銳澤", "智伸科", "均華", "緯創", "世界", "緯穎", "台積電", "中信金", "國票金", "大立光", "台達電", "元大金", "長榮航", "鑽全", "中鋼", "順達", "研華", "世禾", "汎銓", "台新金", "統一實", "寶成", "先進光"], "secondleg.html": ["是方", "銳澤", "智伸科", "均華", "緯創", "世界", "緯穎", "台積電", "中信金", "國票金", "大立光", "台達電", "元大金", "長榮航", "鑽全", "中鋼", "順達", "研華", "世禾", "汎銓", "台新金", "統一實", "寶成", "先進光"], "cpo.html": ["華星光", "上詮", "日月光投控"], "add_zone.html": [], "support.html": [], "levels.html": []}, TNAME={"radar.html": "庫存股雷達", "add_zone.html": "加碼區", "diamonds.html": "真鑽石篩選", "turning.html": "轉折燈", "premarket.html": "盤前國際盤", "chips.html": "法人籌碼", "rotation.html": "輪動雷達", "cpo.html": "CPO觀察", "cold.html": "冷血獵殺", "panic.html": "恐慌接刀", "secondleg.html": "第二腳", "support.html": "🛡️守線", "levels.html": "🔒關卡"};
+  function selVis(){ document.getElementById('stk').style.display=(FILTER.indexOf(cur)>=0)?'':'none'; }
   function flt(v){try{var w=document.getElementById('fr').contentWindow;if(w&&w.filt)w.filt(v);}catch(e){}}
   function fillSel(){
     var stocks=TABSTK[cur]||[], sel=document.getElementById('stk');
@@ -44,11 +38,11 @@
   // 加密頁解密後，內頁呼叫這個把它的股單填進下拉(股名只在解密後才出現，不進公開HTML)
   function encReady(stocks){ if(stocks&&stocks.length){ TABSTK[cur]=stocks; fillSel(); } }
   window.encReady=encReady;
-  // 首頁點工具→切到那個頁籤
-  function goTab(url){var t=document.querySelectorAll('.tab');for(var i=0;i<t.length;i++){var oc=t[i].getAttribute('onclick');if(oc&&oc.indexOf("'"+url+"'")>=0){show(t[i],url);return;}}}
+  function goHome(){ cur="home.html"; document.getElementById('topbar').style.display='none'; document.getElementById('fr').src="home.html?v="+VER; }
+  window.goHome=goHome;
+  // 首頁點方塊→進工具(頁籤隱藏，上面只留 🏠首頁 返回 + 該篩的▼)
+  function goTab(url){ cur=url; document.getElementById('curtitle').textContent=TNAME[url]||''; document.getElementById('topbar').style.display='flex'; selVis(); document.getElementById('fr').src=url+'?v='+VER; }
   window.goTab=goTab;
-  function show(btn,url){var t=document.querySelectorAll('.tab');for(var i=0;i<t.length;i++)t[i].classList.remove('active');btn.classList.add('active');cur=url;place();document.getElementById('fr').src=url+'?v='+VER;}
-  function af(){place();fillSel();flt(document.getElementById('stk').value);}
-  place();
+  function af(){ if(cur==='home.html'){ document.getElementById('topbar').style.display='none'; return; } selVis(); fillSel(); flt(document.getElementById('stk').value); }
 </script>
 </body></html>
