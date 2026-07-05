@@ -48,31 +48,36 @@ def analyze(symbol, name):
         season_ma_20ago = float(ma60.iloc[-21])
         half_ma = float(ma120.iloc[-1]) if not pd.isna(ma120.iloc[-1]) else season_ma
 
-        # 真鑽石閘門(基本面+年線)，不再只看季線
         season_rising = season_ma > season_ma_20ago
-        dia = analyze_diamond(symbol, name)
-        is_diamond = dia['is_true']
 
-        # 冷血訊號
+        # 冷血訊號(先算技術面，便宜又快)
         stop_lower_low = float(last['Close']) >= float(df['Close'].iloc[-2])
         rsi_oversold = rsi < 30
         touch_bb = float(last['Low']) <= bb_l
         signal = stop_lower_low and (rsi_oversold or touch_bb)
+
+        # 只有技術面先觸發的股，才去查體質(analyze_diamond 的 .info 很慢，別對整表24檔都查)
+        is_diamond, grade, roe = False, "-", None
+        if signal:
+            dia = analyze_diamond(symbol, name)
+            is_diamond = dia['is_true']
+            grade = dia['grade']
+            roe = dia['metrics']['roe']
 
         worth = is_diamond and signal
         pitch = ""
         if worth:
             trig = "RSI跌破30超賣" if rsi_oversold else "殺到布林下軌"
             pitch = (f"{name}{trig}(RSI{rsi:.0f})、今天止跌沒再破低，而且是真鑽石"
-                     f"({dia['metrics']['roe'] and str(round(dia['metrics']['roe']*100))+'% ROE' or '體質實在'})"
+                     f"({roe and str(round(roe*100))+'% ROE' or '體質實在'})"
                      f"→強勢股被錯殺、跌到便宜區，值得撿。")
 
-        detail = (f"[{dia['grade']}] 收{price:.1f} | RSI{rsi:.0f}"
+        detail = (f"[{grade}] 收{price:.1f} | RSI{rsi:.0f}"
                   f"{'(超賣)' if rsi_oversold else ''} | 布林下軌{bb_l:.1f}"
                   f"{'(觸及)' if touch_bb else ''} | 季線{season_ma:.1f}{'↑' if season_rising else '↓'}")
 
         return {"symbol": symbol, "name": name, "worth": worth, "pitch": pitch,
-                "detail": detail, "diamond": is_diamond, "signal": signal, "grade": dia['grade']}
+                "detail": detail, "diamond": is_diamond, "signal": signal, "grade": grade}
     except Exception as e:
         print(f"❌ {symbol} 出錯: {e}")
         return None
