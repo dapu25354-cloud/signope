@@ -75,7 +75,8 @@ PAGE_TPL = """<!DOCTYPE html>
   // 由外框頁籤列的下拉呼叫(af→這頁的 filt)。全部/某檔切換顯示。
   function filt(v){
     var ns=document.querySelectorAll('#pre span[data-stk]');
-    for(var i=0;i<ns.length;i++){var o=ns[i].getAttribute('data-stk');ns[i].style.display=(v==='__ALL__'||o===v||o==='__hdr__')?'':'none';}
+    for(var i=0;i<ns.length;i++){var o=ns[i].getAttribute('data-stk');
+      ns[i].style.display=(o==='__hdr__'||v==='__ALL__'||(o===v&&v!=='__NONE__'))?'':'none';}
   }
 </script>
 </body></html>"""
@@ -96,21 +97,25 @@ SHELL_TPL = """<!DOCTYPE html>
   .tab.active{color:#fff;background:#1f6feb;border-color:#1f6feb}
   .stkrow{display:flex;align-items:center;gap:8px;padding:8px 2px 6px}
   .stkrow label{color:#8b949e;font-size:13px;white-space:nowrap}
-  #stk{appearance:none;-webkit-appearance:none;background:transparent;border:none;color:#58a6ff;text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:15px;font-weight:600;padding:2px 18px 2px 2px;max-width:190px;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="7"><path d="M0 0l5 7 5-7z" fill="%2358a6ff"/></svg>');background-repeat:no-repeat;background-position:right center}
+  #stk{appearance:none;-webkit-appearance:none;background:transparent;border:none;color:#58a6ff;text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:15px;font-weight:700;padding:2px 18px 2px 4px;max-width:170px;align-self:center;margin-left:2px;flex:0 0 auto;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="7"><path d="M0 0l5 7 5-7z" fill="%2358a6ff"/></svg>');background-repeat:no-repeat;background-position:right center}
   #stk:hover{color:#79c0ff}
-  #stk option{background:#161b22;color:#e6edf3}
+  #stk option{background:#161b22;color:#e6edf3;font-weight:400}
   iframe{flex:1 1 auto;width:100%;border:0;background:#0d1117}
 </style></head><body>
   <div class="topbar">
-    <div class="tabbar">__TABS__</div>
-    <div class="stkrow" id="stkrow"><label>本頁只看：</label><select id="stk" onchange="apply()"><option value="__ALL__">全部</option></select></div>
+    <div class="tabbar" id="tabbar">__TABS__<select id="stk" onchange="apply()" title="選一檔只看它" style="display:none"><option value="__NONE__">選股票…</option></select></div>
   </div>
   <iframe id="fr" src="radar.html?v=__VER__" onload="af()"></iframe>
 <script>
-  var VER="__VER__", mem={}, cur="radar.html", FILTER=__FILTER__;   // mem:每頁記住選的股; FILTER:哪些頁籤才顯示下拉
-  function toggleSel(){document.getElementById('stkrow').style.display=(FILTER.indexOf(cur)>=0)?'flex':'none';}
+  var VER="__VER__", mem={}, cur="radar.html", FILTER=__FILTER__;   // mem:每頁記住選的股; FILTER:哪些頁籤才有下拉
+  // 把下拉▼移到「當前頁籤」右邊；非篩選頁(盤前等)則隱藏
+  function place(){
+    var sel=document.getElementById('stk'), act=document.querySelector('.tab.active');
+    if(act && FILTER.indexOf(cur)>=0){ act.parentNode.insertBefore(sel, act.nextSibling); sel.style.display=''; }
+    else { sel.style.display='none'; }
+  }
   function flt(v){try{var w=document.getElementById('fr').contentWindow;if(w&&w.filt)w.filt(v);}catch(e){}}
-  // 抓「當前頁」實際有的股票(文字頁看 data-stk、雷達卡片看 data-name)，下拉選項就用這些
+  // 抓「當前頁」實際有的股票(文字頁看 data-stk、雷達卡片看 data-name)
   function tabStocks(){
     var set={}, out=[];
     try{
@@ -123,17 +128,17 @@ SHELL_TPL = """<!DOCTYPE html>
   }
   function fillSel(){
     var stocks=tabStocks(), sel=document.getElementById('stk');
-    var html='<option value="__ALL__">全部</option>';
+    var html='<option value="__NONE__">選股票…</option><option value="__ALL__">全部</option>';
     for(var i=0;i<stocks.length;i++){html+='<option value="'+stocks[i]+'">'+stocks[i]+'</option>';}
     sel.innerHTML=html;
-    var want=mem[cur]||'__ALL__', ok=false;
+    var want=mem[cur]||'__NONE__', ok=false;   // 預設不選、不顯示結果，選了才出現
     for(var k=0;k<sel.options.length;k++){if(sel.options[k].value===want){ok=true;break;}}
-    sel.value=ok?want:'__ALL__';
+    sel.value=ok?want:'__NONE__';
   }
   function apply(){var v=document.getElementById('stk').value;mem[cur]=v;flt(v);}
-  function show(btn,url){var t=document.querySelectorAll('.tab');for(var i=0;i<t.length;i++)t[i].classList.remove('active');btn.classList.add('active');cur=url;toggleSel();document.getElementById('fr').src=url+'?v='+VER;}
-  function af(){toggleSel();fillSel();flt(document.getElementById('stk').value);}
-  toggleSel();
+  function show(btn,url){var t=document.querySelectorAll('.tab');for(var i=0;i<t.length;i++)t[i].classList.remove('active');btn.classList.add('active');cur=url;place();document.getElementById('fr').src=url+'?v='+VER;}
+  function af(){place();fillSel();flt(document.getElementById('stk').value);}
+  place();
 </script>
 </body></html>"""
 

@@ -48,7 +48,7 @@
 </script>
 
   <div class="hd">🚦 轉折燈</div>
-  <div class="upd">最後更新：2026-07-05 09:58（台灣時間）</div>
+  <div class="upd">最後更新：2026-07-05 10:10（台灣時間）</div>
   <div class="wrap"><pre id="pre"><span data-stk="__hdr__">抓取 24 檔…
 ============================================================================
   轉折燈 v3  (勢+量+均線+K棒+RSI 五過關；上車🔺/下車🔻排前)
@@ -93,7 +93,8 @@
   // 由外框頁籤列的下拉呼叫(af→這頁的 filt)。全部/某檔切換顯示。
   function filt(v){
     var ns=document.querySelectorAll('#pre span[data-stk]');
-    for(var i=0;i<ns.length;i++){var o=ns[i].getAttribute('data-stk');ns[i].style.display=(v==='__ALL__'||o===v||o==='__hdr__')?'':'none';}
+    for(var i=0;i<ns.length;i++){var o=ns[i].getAttribute('data-stk');
+      ns[i].style.display=(o==='__hdr__'||v==='__ALL__'||(o===v&&v!=='__NONE__'))?'':'none';}
   }
 </script>
 </body></html>

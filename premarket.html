@@ -48,7 +48,7 @@
 </script>
 
   <div class="hd">🌏 盤前國際盤</div>
-  <div class="upd">最後更新：2026-07-05 09:58（台灣時間）</div>
+  <div class="upd">最後更新：2026-07-05 10:10（台灣時間）</div>
   <div class="wrap"><pre id="pre"><span data-stk="__hdr__">=== 🌏 盤前國際盤 → 台股影響 ===
 
 【最關鍵：半導體 / 台積】
@@ -71,7 +71,7 @@
   銅             6.22  ▲+1.79%  (景氣需求)
 
 【加密 / 貨幣】
-  比特幣       62844.52  ▲+0.48%  (中性)
+  比特幣       62740.49  ▲+0.31%  (中性)
   美元指數        100.86  ▼-0.00%  
   美元日圓        161.34  ▼-0.74%  
   美元台幣         31.92  ▲+0.09%  
@@ -87,7 +87,8 @@
   // 由外框頁籤列的下拉呼叫(af→這頁的 filt)。全部/某檔切換顯示。
   function filt(v){
     var ns=document.querySelectorAll('#pre span[data-stk]');
-    for(var i=0;i<ns.length;i++){var o=ns[i].getAttribute('data-stk');ns[i].style.display=(v==='__ALL__'||o===v||o==='__hdr__')?'':'none';}
+    for(var i=0;i<ns.length;i++){var o=ns[i].getAttribute('data-stk');
+      ns[i].style.display=(o==='__hdr__'||v==='__ALL__'||(o===v&&v!=='__NONE__'))?'':'none';}
   }
 </script>
 </body></html>

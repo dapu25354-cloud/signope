@@ -1591,9 +1591,9 @@ def build_dashboard():
     <script>
         let currentFilter = 'all';
 
-        function filt(v){{  // 給外框頁籤下拉呼叫：v='__ALL__' 或某股名
+        function filt(v){{  // 外框頁籤下拉呼叫：__NONE__不顯示 / __ALL__全部 / 某股名只顯示那檔
             document.querySelectorAll('.card').forEach(function(c){{
-                c.style.display=(v==='__ALL__'||c.getAttribute('data-name')===v)?'':'none';
+                c.style.display=(v==='__ALL__'||(v!=='__NONE__'&&c.getAttribute('data-name')===v))?'':'none';
             }});
         }}
 

@@ -48,7 +48,7 @@
 </script>
 
   <div class="hd">🌋 恐慌接刀</div>
-  <div class="upd">最後更新：2026-07-05 09:58（台灣時間）</div>
+  <div class="upd">最後更新：2026-07-05 10:10（台灣時間）</div>
   <div class="wrap"><pre id="pre"><span data-stk="__hdr__">--- 🌋 啟動【台股崩盤 - 恐慌接刀】極限優化版 掃描 ---
 專門對策：夜盤大跌 3000 點、多殺多、極限乖離
 ------------------------------------------------------------
@@ -64,7 +64,8 @@
   // 由外框頁籤列的下拉呼叫(af→這頁的 filt)。全部/某檔切換顯示。
   function filt(v){
     var ns=document.querySelectorAll('#pre span[data-stk]');
-    for(var i=0;i<ns.length;i++){var o=ns[i].getAttribute('data-stk');ns[i].style.display=(v==='__ALL__'||o===v||o==='__hdr__')?'':'none';}
+    for(var i=0;i<ns.length;i++){var o=ns[i].getAttribute('data-stk');
+      ns[i].style.display=(o==='__hdr__'||v==='__ALL__'||(o===v&&v!=='__NONE__'))?'':'none';}
   }
 </script>
 </body></html>
