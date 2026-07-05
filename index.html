@@ -14,16 +14,18 @@
   .tab.active{color:#fff;background:#1f6feb;border-color:#1f6feb}
   .stkrow{display:flex;align-items:center;gap:8px;padding:8px 2px 6px}
   .stkrow label{color:#8b949e;font-size:13px;white-space:nowrap}
-  #stk{background:#161b22;color:#e6edf3;border:1px solid #30363d;border-radius:8px;padding:7px 10px;font-size:15px;max-width:200px}
+  #stk{appearance:none;-webkit-appearance:none;background:transparent;border:none;color:#58a6ff;text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:15px;font-weight:600;padding:2px 18px 2px 2px;max-width:190px;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="7"><path d="M0 0l5 7 5-7z" fill="%2358a6ff"/></svg>');background-repeat:no-repeat;background-position:right center}
+  #stk:hover{color:#79c0ff}
+  #stk option{background:#161b22;color:#e6edf3}
   iframe{flex:1 1 auto;width:100%;border:0;background:#0d1117}
 </style></head><body>
   <div class="topbar">
     <div class="tabbar"><button class="tab active" onclick="show(this,'radar.html')">庫存股雷達</button><button class="tab" onclick="show(this,'add_zone.html')">加碼區</button><button class="tab" onclick="show(this,'diamonds.html')">真鑽石篩選</button><button class="tab" onclick="show(this,'turning.html')">轉折燈</button><button class="tab" onclick="show(this,'premarket.html')">盤前國際盤</button><button class="tab" onclick="show(this,'chips.html')">法人籌碼</button><button class="tab" onclick="show(this,'rotation.html')">輪動雷達</button><button class="tab" onclick="show(this,'cpo.html')">CPO觀察</button><button class="tab" onclick="show(this,'cold.html')">冷血獵殺</button><button class="tab" onclick="show(this,'panic.html')">恐慌接刀</button><button class="tab" onclick="show(this,'secondleg.html')">第二腳</button><button class="tab" onclick="show(this,'support.html')">🛡️守線</button><button class="tab" onclick="show(this,'levels.html')">🔒關卡</button></div>
     <div class="stkrow" id="stkrow"><label>本頁只看：</label><select id="stk" onchange="apply()"><option value="__ALL__">全部</option><option value="是方">是方</option><option value="銳澤">銳澤</option><option value="智伸科">智伸科</option><option value="均華">均華</option><option value="緯創">緯創</option><option value="世界">世界</option><option value="緯穎">緯穎</option><option value="台積電">台積電</option><option value="中信金">中信金</option><option value="國票金">國票金</option><option value="大立光">大立光</option><option value="台達電">台達電</option><option value="元大金">元大金</option><option value="長榮航">長榮航</option><option value="鑽全">鑽全</option><option value="中鋼">中鋼</option><option value="順達">順達</option><option value="研華">研華</option><option value="世禾">世禾</option><option value="汎銓">汎銓</option><option value="台新金">台新金</option><option value="統一實">統一實</option><option value="寶成">寶成</option><option value="先進光">先進光</option></select></div>
   </div>
-  <iframe id="fr" src="radar.html?v=202607050943" onload="af()"></iframe>
+  <iframe id="fr" src="radar.html?v=202607050950" onload="af()"></iframe>
 <script>
-  var VER="202607050943", mem={}, cur="radar.html", FILTER=["radar.html", "diamonds.html", "turning.html", "chips.html", "rotation.html", "cpo.html", "cold.html", "panic.html", "secondleg.html"];   // mem:每頁記住選的股; FILTER:哪些頁籤才顯示下拉
+  var VER="202607050950", mem={}, cur="radar.html", FILTER=["radar.html", "diamonds.html", "turning.html", "chips.html", "rotation.html", "cpo.html", "cold.html", "panic.html", "secondleg.html"];   // mem:每頁記住選的股; FILTER:哪些頁籤才顯示下拉
   function toggleSel(){document.getElementById('stkrow').style.display=(FILTER.indexOf(cur)>=0)?'flex':'none';}
   function flt(v){try{var w=document.getElementById('fr').contentWindow;if(w&&w.filt)w.filt(v);}catch(e){}}
   function apply(){var v=document.getElementById('stk').value;mem[cur]=v;flt(v);}

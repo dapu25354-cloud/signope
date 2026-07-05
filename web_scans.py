@@ -96,7 +96,9 @@ SHELL_TPL = """<!DOCTYPE html>
   .tab.active{color:#fff;background:#1f6feb;border-color:#1f6feb}
   .stkrow{display:flex;align-items:center;gap:8px;padding:8px 2px 6px}
   .stkrow label{color:#8b949e;font-size:13px;white-space:nowrap}
-  #stk{background:#161b22;color:#e6edf3;border:1px solid #30363d;border-radius:8px;padding:7px 10px;font-size:15px;max-width:200px}
+  #stk{appearance:none;-webkit-appearance:none;background:transparent;border:none;color:#58a6ff;text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:15px;font-weight:600;padding:2px 18px 2px 2px;max-width:190px;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="7"><path d="M0 0l5 7 5-7z" fill="%2358a6ff"/></svg>');background-repeat:no-repeat;background-position:right center}
+  #stk:hover{color:#79c0ff}
+  #stk option{background:#161b22;color:#e6edf3}
   iframe{flex:1 1 auto;width:100%;border:0;background:#0d1117}
 </style></head><body>
   <div class="topbar">
