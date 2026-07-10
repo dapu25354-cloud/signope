@@ -55,7 +55,9 @@ def analyze_diamond(symbol, name=""):
                 "metrics": {"roe": roe, "pm": pm, "eps": eps, "eg": eg, "rg": rg,
                             "year_ma": None, "bias_year": None}}
 
-    close = df['Close']
+    # 盤中抓的話今天這根K棒收盤價還沒定案、yfinance常給NaN，
+    # NaN混進rolling窗口會讓整條年線變NaN、誤判成「跌破年線」，所以先丟掉NaN。
+    close = df['Close'].dropna()
     ma240 = close.rolling(240).mean()
     price = float(close.iloc[-1])
     has_year = not pd.isna(ma240.iloc[-1])
