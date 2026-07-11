@@ -69,7 +69,8 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add index.html home.html radar.html diamonds.html turning.html premarket.html chips.html rotation.html cpo.html cold.html panic.html secondleg.html
+          git add index.html home.html radar.html premarket.html chips.html rotation.html cpo.html
+          git rm --ignore-unmatch diamonds.html turning.html cold.html panic.html secondleg.html
           git diff-index --quiet HEAD || (git commit -m "Auto-update stock dashboard HTML" && git push)
 # 手動觸發重生網頁 2026-07-02 新增加碼區頁
 # 觸發重生 2026-07-03 加碼區加入全部持股(19檔)+多空排列/糾結/過熱判斷修正

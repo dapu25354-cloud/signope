@@ -26,15 +26,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 TW = timezone(timedelta(hours=8))
 
 from page_lock import inject as lock_inject
-import diamond_scanner
-import turning_point
 import premarket
 import institutional_chips
 import rotation_radar
 import cpo_watch
-import cold_blooded_hunter
-import panic_bottom_hunter
-import second_leg_hunter
 
 
 def now_str():
@@ -136,15 +131,10 @@ TABS = [
     ("🏠 首頁", "home.html"),
     ("庫存股雷達", "radar.html"),
     ("加碼區", "add_zone.html"),
-    ("真鑽石篩選", "diamonds.html"),
-    ("轉折燈", "turning.html"),
     ("盤前國際盤", "premarket.html"),
     ("法人籌碼", "chips.html"),
     ("輪動雷達", "rotation.html"),
     ("CPO觀察", "cpo.html"),
-    ("冷血獵殺", "cold.html"),
-    ("恐慌接刀", "panic.html"),
-    ("第二腳", "secondleg.html"),
     ("🍱午餐小抄", "lunch.html"),  # 私人加密頁(含部位，密文)
     ("🛡️守線", "support.html"),   # 私人加密頁(防守線+策略，密文)
     ("🔒關卡", "levels.html"),     # 私人加密頁(成本/持股，密文)
@@ -152,16 +142,13 @@ TABS = [
 ]
 
 # 文字型工具：(頁面標題, 輸出檔, 要跑的函式)。加新工具在這裡加一行即可。
+# 2026-07-11：進場判斷類(真鑽石篩選/轉折燈/冷血獵殺/恐慌接刀/第二腳獵殺)拿掉不上網，
+# 網頁太笨重。這些工具還在，只是留在桌面控制台「⚔獵殺掃描(進場判斷)」頁用，不發布。
 TEXT_TOOLS = [
-    ("💎 真鑽石篩選", "diamonds.html", lambda: diamond_scanner.run()),
-    ("🚦 轉折燈", "turning.html", lambda: turning_point.main()),
     ("🌏 盤前國際盤", "premarket.html", lambda: premarket.run()),
     ("💰 法人籌碼", "chips.html", lambda: institutional_chips.run()),
     ("📡 庫存輪動雷達", "rotation.html", lambda: rotation_radar.run()),
     ("🔭 CPO矽光子觀察", "cpo.html", lambda: cpo_watch.run()),
-    ("⚔️ 冷血獵殺", "cold.html", lambda: cold_blooded_hunter.run_full_scan()),
-    ("🌋 恐慌接刀", "panic.html", lambda: panic_bottom_hunter.run_panic_scan()),
-    ("🐺 第二腳獵殺", "secondleg.html", lambda: second_leg_hunter.run_hunter()),
 ]
 
 # 首頁九宮格：(檔案, emoji, 顯示名, 短說明, 主色)
@@ -173,18 +160,11 @@ HOME_GROUPS = [
         ("rotation.html", "🔄", "輪動雷達", "類股輪動"),
         ("cpo.html", "🔭", "CPO觀察", "矽光子股"),
     ]),
-    ("⚔️ 獵殺掃描", "#8957e5", [
-        ("diamonds.html", "💎", "真鑽石篩選", "分真假"),
-        ("turning.html", "🚦", "轉折燈", "上車下車"),
-        ("cold.html", "⚔️", "冷血獵殺", "抄超賣"),
-        ("panic.html", "🌋", "恐慌接刀", "崩盤接"),
-        ("secondleg.html", "🐺", "第二腳", "回測接點"),
-    ]),
     ("🔒 寶挖挖", "#2ea043", [
         ("lunch.html", "🍱", "午餐小抄", "盤中看這張"),
         ("add_zone.html", "📈", "加碼區", "拉回加碼點"),
         ("support.html", "🛡️", "守線小幫手", "防守線"),
-        ("levels.html", "🎯", "關卡小工具", "成本關卡"),
+        ("levels.html", "🎯", "關卡小白", "成本關卡"),
         ("low_buy.html", "🛡️", "精密低接", "下殺暫緩接"),
     ]),
 ]
@@ -285,8 +265,7 @@ def shell():
     ver = datetime.now(TW).strftime('%Y%m%d%H%M')  # 版本記號=防快取，每次更新換一個號
     import json
     # 只有這些頁籤才顯示下拉(有個股可篩)。盤前=國際盤沒個股→不顯示
-    watch_tabs = ["radar.html", "diamonds.html", "turning.html", "chips.html", "rotation.html",
-                  "cold.html", "panic.html", "secondleg.html"]
+    watch_tabs = ["radar.html", "chips.html", "rotation.html"]
     enc_tabs = ["add_zone.html", "support.html", "levels.html"]   # 加密頁(有股票下拉)：解密後才由 encReady 填股單。午餐小抄是卡片、不列入
     filterable = json.dumps(watch_tabs + ["cpo.html"] + enc_tabs)
     # 各頁籤的「固定股單」：觀察24檔 / CPO那幾檔。下拉選項用這個，才會完整(不靠內容硬抓)
