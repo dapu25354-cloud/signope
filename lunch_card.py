@@ -28,7 +28,7 @@ CARD_CSS = """
     background:#f5f6f9;
     color:#2c3e50;
     font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans TC',sans-serif;
-    padding:8px 8px 24px;
+    padding:8px 16px 24px;
     font-size:14px; /* 基底字型大小 */
     line-height:1.45
   }
